@@ -397,7 +397,34 @@ function Player({ audioRef, track, position, isPlaying, playAll, playbackRate, o
       <audio ref={audioRef} onTimeUpdate={(event) => onTime(event.currentTarget.currentTime)} onEnded={onEnded} preload="metadata" />
       <div className="player-topline">
         <span>{playAll ? `${copy.completePractice} · ${track.number} ${copy.of} 5` : `${copy.section} ${track.number} ${copy.of} 5`}</span>
-        <span>{formatClock(track.duration)}</span>
+        <div className="player-options">
+          <button
+            className="options-toggle"
+            type="button"
+            aria-label={copy.changePlaybackSpeed}
+            aria-expanded={optionsOpen}
+            onClick={() => setOptionsOpen((open) => !open)}
+          >
+            <MoreHorizontal />
+          </button>
+          {optionsOpen && (
+            <div className="options-menu" aria-label={copy.playbackSpeed}>
+              {playbackRates.map((rate) => (
+                <button
+                  className={playbackRate === rate ? "active" : ""}
+                  key={rate}
+                  type="button"
+                  onClick={() => {
+                    onRateChange(rate);
+                    setOptionsOpen(false);
+                  }}
+                >
+                  {rate}× {playbackRate === rate && <Check size={13} />}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
       <div className="player-title">
         <h2>{track.title}</h2>
@@ -421,34 +448,6 @@ function Player({ audioRef, track, position, isPlaying, playAll, playbackRate, o
           {isPlaying ? <Pause fill="currentColor" /> : <Play fill="currentColor" />}
         </button>
         <button type="button" aria-label={copy.nextSection} onClick={onNext}><ChevronRight /></button>
-      </div>
-      <div className="player-options">
-        <button
-          className="options-toggle"
-          type="button"
-          aria-label={copy.changePlaybackSpeed}
-          aria-expanded={optionsOpen}
-          onClick={() => setOptionsOpen((open) => !open)}
-        >
-          <MoreHorizontal />
-        </button>
-        {optionsOpen && (
-          <div className="options-menu" aria-label={copy.playbackSpeed}>
-            {playbackRates.map((rate) => (
-              <button
-                className={playbackRate === rate ? "active" : ""}
-                key={rate}
-                type="button"
-                onClick={() => {
-                  onRateChange(rate);
-                  setOptionsOpen(false);
-                }}
-              >
-                {rate}× {playbackRate === rate && <Check size={13} />}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
     </section>
   );

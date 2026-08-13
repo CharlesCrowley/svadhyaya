@@ -54,10 +54,10 @@ h2 { font-size: 25px; line-height: 1.12; }
 .player-controls .play-button { width: 62px; height: 62px; background: var(--saffron); color: var(--ink); transition: transform 120ms ease, background 120ms ease; }
 .player-controls .play-button:active { transform: scale(.94); background: #ffa91f; }
 .play-button svg { margin-left: 2px; }
-.player-options { position: absolute; right: 14px; bottom: 14px; }
-.options-toggle { width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #d9aaa5; display: grid; place-items: center; }
+.player-options { position: relative; margin: -7px -7px -7px 0; }
+.options-toggle { width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #eecac5; display: grid; place-items: center; }
 .options-toggle svg { width: 20px; height: 20px; }
-.options-menu { position: absolute; right: 0; bottom: 40px; z-index: 4; width: 108px; padding: 5px; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; background: #fffaf2; box-shadow: 0 10px 28px rgba(40,26,24,.28); }
+.options-menu { position: absolute; right: 0; top: 34px; z-index: 4; width: 108px; padding: 5px; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; background: #fffaf2; box-shadow: 0 10px 28px rgba(40,26,24,.28); }
 .options-menu button { width: 100%; height: 34px; padding: 0 9px; border: 0; border-radius: 8px; background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: space-between; font-size: 11px; }
 .options-menu button.active { color: var(--maroon); background: var(--saffron-soft); font-weight: 700; }
 
