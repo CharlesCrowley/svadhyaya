@@ -2,13 +2,11 @@
 // without changing the components.
 export const copy = {
   morningPractice: "Práctica de la mañana",
-  beginWhereYouAre: "Empieza donde estás.",
   playCompletePractice: "Reproducir la práctica completa",
   practice: "Práctica",
   chantsAndMeditation: "Cantos y meditación",
   chantSections: "Secciones de cantos",
   meditation: "Meditación",
-  remainWithPractice: "Permanece en la práctica",
   chooseDuration: "Elige una duración",
   remaining: "restantes",
   endSession: "Terminar sesión",

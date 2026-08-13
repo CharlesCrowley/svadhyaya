@@ -222,7 +222,6 @@ export function App() {
           <div className="view-enter">
             <section className="opening-copy">
               <p className="eyebrow">{copy.morningPractice}</p>
-              <h1>{copy.beginWhereYouAre}</h1>
             </section>
 
             <Player
@@ -281,7 +280,7 @@ export function App() {
               <div className="timer-heading">
                 <div>
                   <p className="eyebrow">{copy.meditation}</p>
-                  <h2>{timer ? copy.remainWithPractice : copy.chooseDuration}</h2>
+                  {!timer && <h2>{copy.chooseDuration}</h2>}
                 </div>
                 <TimerReset size={22} />
               </div>
