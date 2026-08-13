@@ -33,3 +33,15 @@ export function recentDates(count: number): string[] {
   }
   return dates;
 }
+
+export function contributionCalendar(weeks: number, now = new Date()): Array<string | null> {
+  const today = madridDate(now);
+  const cursor = new Date(`${today}T12:00:00`);
+  cursor.setDate(cursor.getDate() - cursor.getDay() - ((weeks - 1) * 7));
+
+  return Array.from({ length: weeks * 7 }, () => {
+    const date = madridDate(cursor);
+    cursor.setDate(cursor.getDate() + 1);
+    return date <= today ? date : null;
+  });
+}

@@ -36,7 +36,7 @@ import {
   type PracticeType,
   type TimerState
 } from "./lib/storage";
-import { displayDate, formatClock, madridDate, recentDates } from "./lib/time";
+import { contributionCalendar, displayDate, formatClock, madridDate, recentDates } from "./lib/time";
 
 type View = "today" | "practice" | "history";
 
@@ -221,7 +221,7 @@ export function App() {
   const recent = recentDates(7);
   const completeDays = practiceDays.filter((day) => day.svadhyaya && day.meditation).length;
   const currentStreak = calculateStreak(practiceDays);
-  const heatmapDates = recentDates(84);
+  const heatmapDates = contributionCalendar(12);
 
   return (
     <div className="app-shell">
@@ -345,7 +345,8 @@ export function App() {
                 <small>{copy.lastTwelveWeeks}</small>
               </div>
               <div className="heatmap-grid">
-                {heatmapDates.map((date) => {
+                {heatmapDates.map((date, index) => {
+                  if (!date) return <span className="heatmap-cell is-future" key={`future-${index}`} />;
                   const record = practiceDays.find((day) => day.date === date);
                   const level = Number(Boolean(record?.svadhyaya)) + Number(Boolean(record?.meditation));
                   const description = level === 2 ? copy.fullPracticeDay : level === 1 ? copy.onePractice : copy.noPractice;
