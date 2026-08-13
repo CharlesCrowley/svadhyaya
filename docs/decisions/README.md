@@ -4,7 +4,7 @@ Use this directory for decisions that materially affect implementation, security
 
 ## Current decisions
 
-- [ADR-0001: Separate application and database](0001-separate-application-and-database.md) — proposed
+- [ADR-0001: Separate application and database](0001-separate-application-and-database.md) — accepted
 - [ADR-0002: Personal practice rules](0002-personal-practice-rules.md) — accepted
 
 ## Naming

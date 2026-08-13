@@ -2,7 +2,7 @@
 
 ## Status
 
-Proposed
+Accepted
 
 ## Context
 
@@ -20,6 +20,7 @@ Run Svadhyaya as a separate application with a separate Neon project and separat
 - No ESL `public.*` tables or cross-app identity bridges are used.
 - The initial deployment is one Railway service serving Express, the Telegram webhook and the built Vite/React Mini App.
 - Audio is stored in a private Railway storage bucket and streamed through the application server with HTTP range support. Storage credentials are never exposed to the client.
+- The isolated Neon project is `royal-darkness-08840874` in Frankfurt (`aws-eu-central-1`). Its production branch remains schema-empty until a reviewed migration is explicitly approved.
 
 ## Consequences
 
