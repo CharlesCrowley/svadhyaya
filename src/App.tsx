@@ -49,6 +49,7 @@ export function App() {
   const [position, setPosition] = useState(initialPlayback.position);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playAll, setPlayAll] = useState(initialPlayback.playAll);
+  const [playbackRate, setPlaybackRate] = useState(initialPlayback.playbackRate);
   const [practiceDays, setPracticeDays] = useState<PracticeDay[]>(readPracticeDays);
   const [timer, setTimer] = useState<TimerState | null>(readTimer);
   const [remaining, setRemaining] = useState(() =>
@@ -122,6 +123,7 @@ export function App() {
     if (!audio) return;
     audio.pause();
     audio.src = activeTrack.source;
+    audio.playbackRate = playbackRate;
     audio.load();
     const restorePosition = () => {
       audio.currentTime = Math.min(position, Math.max(0, audio.duration - 0.5));
@@ -137,10 +139,10 @@ export function App() {
   useEffect(() => {
     const interval = window.setInterval(() => {
       const currentPosition = audioRef.current?.currentTime ?? position;
-      savePlayback({ trackId: activeTrack.id, position: currentPosition, playAll });
+      savePlayback({ trackId: activeTrack.id, position: currentPosition, playAll, playbackRate });
     }, 3000);
     return () => window.clearInterval(interval);
-  }, [activeTrack.id, playAll, position]);
+  }, [activeTrack.id, playAll, playbackRate, position]);
 
   const chooseTrack = (index: number, shouldPlay = false) => {
     const audio = audioRef.current;
@@ -148,7 +150,7 @@ export function App() {
     setTrackIndex(index);
     setPosition(0);
     setIsPlaying(false);
-    savePlayback({ trackId: chantTracks[index].id, position: 0, playAll });
+    savePlayback({ trackId: chantTracks[index].id, position: 0, playAll, playbackRate });
     if (shouldPlay) {
       window.setTimeout(() => {
         void audioRef.current?.play().then(() => setIsPlaying(true));
@@ -167,6 +169,17 @@ export function App() {
       setIsPlaying(false);
       setPosition(audio.currentTime);
     }
+  };
+
+  const changePlaybackRate = (rate: number) => {
+    setPlaybackRate(rate);
+    if (audioRef.current) audioRef.current.playbackRate = rate;
+    savePlayback({
+      trackId: activeTrack.id,
+      position: audioRef.current?.currentTime ?? position,
+      playAll,
+      playbackRate: rate
+    });
   };
 
   const startCompletePractice = () => {
@@ -228,6 +241,7 @@ export function App() {
               position={position}
               isPlaying={isPlaying}
               playAll={playAll}
+              playbackRate={playbackRate}
               onToggle={togglePlayback}
               onTime={(nextPosition) => setPosition(nextPosition)}
               onSeek={(nextPosition) => {
@@ -235,6 +249,7 @@ export function App() {
                 setPosition(nextPosition);
               }}
               onEnded={handleTrackEnd}
+              onRateChange={changePlaybackRate}
               onPrevious={() => chooseTrack(Math.max(0, trackIndex - 1))}
               onNext={() => chooseTrack(Math.min(chantTracks.length - 1, trackIndex + 1))}
             />
@@ -362,15 +377,17 @@ interface PlayerProps {
   position: number;
   isPlaying: boolean;
   playAll: boolean;
+  playbackRate: number;
   onToggle: () => void;
   onTime: (position: number) => void;
   onSeek: (position: number) => void;
   onEnded: () => void;
+  onRateChange: (rate: number) => void;
   onPrevious: () => void;
   onNext: () => void;
 }
 
-function Player({ audioRef, track, position, isPlaying, playAll, onToggle, onTime, onSeek, onEnded, onPrevious, onNext }: PlayerProps) {
+function Player({ audioRef, track, position, isPlaying, playAll, playbackRate, onToggle, onTime, onSeek, onEnded, onRateChange, onPrevious, onNext }: PlayerProps) {
   return (
     <section className="player-surface">
       <audio ref={audioRef} onTimeUpdate={(event) => onTime(event.currentTarget.currentTime)} onEnded={onEnded} preload="metadata" />
@@ -400,6 +417,19 @@ function Player({ audioRef, track, position, isPlaying, playAll, onToggle, onTim
           {isPlaying ? <Pause fill="currentColor" /> : <Play fill="currentColor" />}
         </button>
         <button type="button" aria-label={copy.nextSection} onClick={onNext}><ChevronRight /></button>
+      </div>
+      <div className="speed-controls" aria-label={copy.playbackSpeed}>
+        {[1, 1.25, 1.5, 2].map((rate) => (
+          <button
+            className={playbackRate === rate ? "active" : ""}
+            key={rate}
+            type="button"
+            aria-pressed={playbackRate === rate}
+            onClick={() => onRateChange(rate)}
+          >
+            {rate}×
+          </button>
+        ))}
       </div>
     </section>
   );

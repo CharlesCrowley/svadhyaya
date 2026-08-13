@@ -11,6 +11,7 @@ export interface PlaybackState {
   trackId: string;
   position: number;
   playAll: boolean;
+  playbackRate: number;
 }
 
 export interface TimerState {
@@ -32,11 +33,14 @@ export function savePracticeDays(days: PracticeDay[]): void {
 }
 
 export function readPlayback(): PlaybackState {
-  return readJson<PlaybackState>(PLAYBACK_KEY, {
+  const stored = readJson<Partial<PlaybackState>>(PLAYBACK_KEY, {});
+  return {
     trackId: "introductory-mantras",
     position: 0,
-    playAll: false
-  });
+    playAll: false,
+    playbackRate: 1,
+    ...stored
+  };
 }
 
 export function savePlayback(state: PlaybackState): void {
