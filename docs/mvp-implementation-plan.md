@@ -250,7 +250,22 @@ Consent revocation immediately hard-deletes the user and cascades to their pract
 - `created_at TIMESTAMPTZ NOT NULL DEFAULT now()`
 - `updated_at TIMESTAMPTZ NOT NULL DEFAULT now()`
 - unique constraint on `(user_id, practice_date)`
-- check: `(meditation_complete AND meditation_minutes >= 1) OR (NOT meditation_complete AND meditation_minutes IS NULL)`
+- check:
+
+  ```sql
+  CHECK (
+    (
+      meditation_complete
+      AND meditation_minutes IS NOT NULL
+      AND meditation_minutes >= 1
+    )
+    OR
+    (
+      NOT meditation_complete
+      AND meditation_minutes IS NULL
+    )
+  )
+  ```
 
 All foreign keys are `NOT NULL` unless explicitly marked nullable. Telegram IDs must be positive. Streaks and totals are derived, never persisted. Daily writes use field-specific upserts so concurrent svadhyaya and meditation updates do not overwrite each other.
 
