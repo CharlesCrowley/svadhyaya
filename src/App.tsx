@@ -16,6 +16,7 @@ import {
   Circle,
   History,
   ListMusic,
+  MoreHorizontal,
   Pause,
   Play,
   Sparkles,
@@ -389,10 +390,7 @@ interface PlayerProps {
 
 function Player({ audioRef, track, position, isPlaying, playAll, playbackRate, onToggle, onTime, onSeek, onEnded, onRateChange, onPrevious, onNext }: PlayerProps) {
   const playbackRates = [1, 1.25, 1.5, 2];
-  const cyclePlaybackRate = () => {
-    const currentIndex = playbackRates.indexOf(playbackRate);
-    onRateChange(playbackRates[(currentIndex + 1) % playbackRates.length]);
-  };
+  const [optionsOpen, setOptionsOpen] = useState(false);
 
   return (
     <section className="player-surface">
@@ -424,14 +422,34 @@ function Player({ audioRef, track, position, isPlaying, playAll, playbackRate, o
         </button>
         <button type="button" aria-label={copy.nextSection} onClick={onNext}><ChevronRight /></button>
       </div>
-      <button
-        className="speed-toggle"
-        type="button"
-        aria-label={`${copy.changePlaybackSpeed}. ${copy.playbackSpeed}: ${playbackRate}×`}
-        onClick={cyclePlaybackRate}
-      >
-        {playbackRate}×
-      </button>
+      <div className="player-options">
+        <button
+          className="options-toggle"
+          type="button"
+          aria-label={copy.changePlaybackSpeed}
+          aria-expanded={optionsOpen}
+          onClick={() => setOptionsOpen((open) => !open)}
+        >
+          <MoreHorizontal />
+        </button>
+        {optionsOpen && (
+          <div className="options-menu" aria-label={copy.playbackSpeed}>
+            {playbackRates.map((rate) => (
+              <button
+                className={playbackRate === rate ? "active" : ""}
+                key={rate}
+                type="button"
+                onClick={() => {
+                  onRateChange(rate);
+                  setOptionsOpen(false);
+                }}
+              >
+                {rate}× {playbackRate === rate && <Check size={13} />}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
     </section>
   );
 }

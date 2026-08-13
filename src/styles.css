@@ -41,7 +41,7 @@ h2 { font-size: 25px; line-height: 1.12; }
 .section-heading h1 { max-width: 390px; }
 .view-enter { animation: enter 260ms ease both; }
 
-.player-surface { background: var(--maroon); color: #fffaf2; border-radius: 22px; padding: 20px; box-shadow: 0 8px 30px rgba(65, 27, 20, .12); }
+.player-surface { position: relative; background: var(--maroon); color: #fffaf2; border-radius: 22px; padding: 20px; box-shadow: 0 8px 30px rgba(65, 27, 20, .12); }
 .player-topline, .player-times { display: flex; justify-content: space-between; font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: #eecac5; }
 .player-title { min-height: 92px; padding: 22px 0 12px; }
 .player-title h2 { font-size: 28px; }
@@ -54,7 +54,12 @@ h2 { font-size: 25px; line-height: 1.12; }
 .player-controls .play-button { width: 62px; height: 62px; background: var(--saffron); color: var(--ink); transition: transform 120ms ease, background 120ms ease; }
 .player-controls .play-button:active { transform: scale(.94); background: #ffa91f; }
 .play-button svg { margin-left: 2px; }
-.speed-toggle { display: block; min-width: 40px; margin: 10px auto 0; padding: 4px 8px; border: 0; background: transparent; color: #d9aaa5; font-size: 10px; font-weight: 600; }
+.player-options { position: absolute; right: 14px; bottom: 14px; }
+.options-toggle { width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #d9aaa5; display: grid; place-items: center; }
+.options-toggle svg { width: 20px; height: 20px; }
+.options-menu { position: absolute; right: 0; bottom: 40px; z-index: 4; width: 108px; padding: 5px; border: 1px solid rgba(255,255,255,.12); border-radius: 12px; background: #fffaf2; box-shadow: 0 10px 28px rgba(40,26,24,.28); }
+.options-menu button { width: 100%; height: 34px; padding: 0 9px; border: 0; border-radius: 8px; background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: space-between; font-size: 11px; }
+.options-menu button.active { color: var(--maroon); background: var(--saffron-soft); font-weight: 700; }
 
 .complete-practice { width: 100%; min-height: 54px; border: 0; border-bottom: 1px solid var(--divider); background: transparent; color: var(--ink); display: grid; grid-template-columns: 28px 1fr auto; align-items: center; text-align: left; padding: 0 4px; font-size: 13px; font-weight: 700; }
 .complete-practice svg { color: var(--maroon); }
