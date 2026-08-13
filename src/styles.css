@@ -102,9 +102,10 @@ h2 { font-size: 25px; line-height: 1.12; }
 .text-button { margin-top: 24px; border: 0; background: transparent; color: var(--maroon); font-size: 12px; text-decoration: underline; text-underline-offset: 4px; }
 
 .history-summary { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin: 12px 0 38px; }
-.history-summary.single-stat { grid-template-columns: 1fr; max-width: 160px; margin-bottom: 30px; }
+.history-summary.compact-summary { margin: -8px 0 34px; }
 .history-summary div { border-top: 2px solid var(--saffron); padding-top: 12px; display: grid; }
 .history-summary strong { font-family: "Newsreader", Georgia, serif; font-size: 40px; font-weight: 500; }
+.history-summary.compact-summary strong { font-size: 28px; }
 .history-summary span { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
 .practice-heatmap { margin-bottom: 38px; }
 .heatmap-heading { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 12px; }

@@ -220,6 +220,7 @@ export function App() {
 
   const recent = recentDates(7);
   const completeDays = practiceDays.filter((day) => day.svadhyaya && day.meditation).length;
+  const currentStreak = calculateStreak(practiceDays);
   const heatmapDates = recentDates(84);
 
   return (
@@ -338,10 +339,6 @@ export function App() {
               <h1>{copy.quietRecord}</h1>
             </section>
 
-            <div className="history-summary single-stat">
-              <div><strong>{completeDays}</strong><span>{copy.completeDays}</span></div>
-            </div>
-
             <section className="practice-heatmap" aria-label={copy.practiceActivity}>
               <div className="heatmap-heading">
                 <span>{copy.practiceActivity}</span>
@@ -369,6 +366,11 @@ export function App() {
                 <span>{copy.more}</span>
               </div>
             </section>
+
+            <div className="history-summary compact-summary">
+              <div><strong>{currentStreak}</strong><span>{copy.currentStreak}</span></div>
+              <div><strong>{completeDays}</strong><span>{copy.totalDays}</span></div>
+            </div>
 
             <section className="week-list" aria-label={copy.lastSevenDays}>
               {recent.map((date) => {
@@ -526,4 +528,15 @@ function HabitDot({ complete, label }: { complete: boolean; label: string }) {
 
 function NavButton({ active, label, icon, onClick }: { active: boolean; label: string; icon: ReactElement; onClick: () => void }) {
   return <button className={active ? "active" : ""} type="button" onClick={onClick}>{icon}<span>{label}</span></button>;
+}
+
+function calculateStreak(days: PracticeDay[]): number {
+  const completed = new Set(days.filter((day) => day.svadhyaya && day.meditation).map((day) => day.date));
+  let streak = 0;
+  const cursor = new Date();
+  while (completed.has(madridDate(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
 }
