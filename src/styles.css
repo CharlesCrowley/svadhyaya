@@ -26,16 +26,11 @@ button, input { font: inherit; }
 button { -webkit-tap-highlight-color: transparent; }
 
 .app-shell { min-height: 100svh; max-width: 520px; margin: 0 auto; padding: env(safe-area-inset-top) 20px calc(92px + env(safe-area-inset-bottom)); }
-.app-header { height: 84px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--divider); }
+.app-header { height: 84px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--divider); }
 .app-header p { margin: 0; }
-.header-date { color: var(--muted); font-size: 13px; margin-top: 2px !important; }
+.header-date { color: var(--muted); font-size: 12px; text-align: right; }
 .eyebrow { margin: 0 0 5px; color: var(--maroon); font-size: 11px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
-.brand-mark { width: 44px; height: 44px; color: var(--saffron); display: grid; place-items: center; position: relative; }
-.mark-rays { position: absolute; top: -6px; font-size: 17px; }
-.mark-lines { display: grid; gap: 3px; margin-top: 10px; }
-.mark-lines i { display: block; width: 31px; height: 4px; background: currentColor; }
-.mark-lines i:nth-child(2) { position: relative; }
-.mark-lines i:nth-child(2)::after { content: ""; position: absolute; width: 7px; height: 7px; border-radius: 50%; background: var(--canvas); left: 12px; top: -2px; }
+.brand-logo { display: block; width: 72px; height: 50px; object-fit: contain; mix-blend-mode: multiply; }
 
 main { padding-top: 28px; }
 h1, h2 { font-family: "Newsreader", Georgia, serif; font-weight: 500; margin: 0; letter-spacing: -.025em; }

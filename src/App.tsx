@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { chantTracks } from "./data/tracks";
 import { copy } from "./data/copy";
+import advaitaVidyaLogo from "./assets/advaita-vidya-logo.jpg";
 import {
   readPlayback,
   readPracticeDays,
@@ -210,11 +211,8 @@ export function App() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <BrandMark />
-        <div>
-          <p className="eyebrow">Advaita Vidya</p>
-          <p className="header-date">{displayDate()}</p>
-        </div>
+        <img className="brand-logo" src={advaitaVidyaLogo} alt="Advaita Vidya" />
+        <p className="header-date">{displayDate()}</p>
       </header>
 
       <main>
@@ -433,15 +431,6 @@ function HabitDot({ complete, label }: { complete: boolean; label: string }) {
 
 function NavButton({ active, label, icon, onClick }: { active: boolean; label: string; icon: ReactElement; onClick: () => void }) {
   return <button className={active ? "active" : ""} type="button" onClick={onClick}>{icon}<span>{label}</span></button>;
-}
-
-function BrandMark() {
-  return (
-    <div className="brand-mark" aria-label="Advaita Vidya">
-      <span className="mark-rays">✦</span>
-      <span className="mark-lines"><i /><i /><i /></span>
-    </div>
-  );
 }
 
 function calculateStreak(days: PracticeDay[]): number {
