@@ -389,7 +389,7 @@ interface PlayerProps {
 }
 
 function Player({ audioRef, track, position, isPlaying, playAll, playbackRate, onToggle, onTime, onSeek, onEnded, onRateChange, onPrevious, onNext }: PlayerProps) {
-  const playbackRates = [1, 1.25, 1.5, 2];
+  const playbackRates = [1, 1.2, 1.5, 2];
   const [optionsOpen, setOptionsOpen] = useState(false);
   const optionsRef = useRef<HTMLDivElement>(null);
 

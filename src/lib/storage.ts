@@ -34,12 +34,13 @@ export function savePracticeDays(days: PracticeDay[]): void {
 
 export function readPlayback(): PlaybackState {
   const stored = readJson<Partial<PlaybackState>>(PLAYBACK_KEY, {});
+  const playbackRate = stored.playbackRate === 1.25 ? 1.2 : (stored.playbackRate ?? 1);
   return {
     trackId: "introductory-mantras",
     position: 0,
     playAll: false,
-    playbackRate: 1,
-    ...stored
+    ...stored,
+    playbackRate
   };
 }
 
