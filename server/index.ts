@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import express from "express";
 import { env } from "./env.js";
+import { practiceApi } from "./practice-api.js";
 
 const app = express();
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
@@ -32,6 +33,8 @@ app.use(express.json({ limit: "32kb" }));
 app.get("/api/health", (_request, response) => {
   response.json({ ok: true, service: "svadhyaya", environment: env.NODE_ENV });
 });
+
+app.use("/api", practiceApi);
 
 if (s3) {
   app.get("/media/:filename", async (request, response) => {

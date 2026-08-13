@@ -60,3 +60,24 @@ This rehearsal is not production-apply approval. Before production:
 - create and verify a least-privilege application role
 - finalize Spanish consent, export and deletion flows
 - obtain explicit production-migration approval
+
+## Rehearsal API smoke test
+
+The local production server build was connected to the rehearsal branch using only
+`svadhyaya_app`. A freshly signed synthetic Telegram Mini App payload for the allowlisted
+user exercised:
+
+- authenticated but not-yet-consented session lookup
+- versioned consent creation
+- manual svadhyaya completion
+- 20-minute meditation completion
+- history read
+- machine-readable export
+- immediate hard deletion
+
+All expected responses succeeded. A final owner-role query confirmed zero users and zero
+practice rows after deletion. The production branch and hosted Railway service were not
+connected to Neon during this test.
+
+Telegram authentication has unit coverage for valid, tampered, expired, future-dated and
+duplicate-field payloads, following Telegram's official HMAC-SHA-256 validation method.
