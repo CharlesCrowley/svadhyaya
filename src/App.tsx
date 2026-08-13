@@ -220,7 +220,7 @@ export function App() {
 
   const recent = recentDates(7);
   const completeDays = practiceDays.filter((day) => day.svadhyaya && day.meditation).length;
-  const currentStreak = calculateStreak(practiceDays);
+  const heatmapDates = recentDates(84);
 
   return (
     <div className="app-shell">
@@ -338,10 +338,37 @@ export function App() {
               <h1>{copy.quietRecord}</h1>
             </section>
 
-            <div className="history-summary">
-              <div><strong>{currentStreak}</strong><span>{copy.currentStreak}</span></div>
+            <div className="history-summary single-stat">
               <div><strong>{completeDays}</strong><span>{copy.completeDays}</span></div>
             </div>
+
+            <section className="practice-heatmap" aria-label={copy.practiceActivity}>
+              <div className="heatmap-heading">
+                <span>{copy.practiceActivity}</span>
+                <small>{copy.lastTwelveWeeks}</small>
+              </div>
+              <div className="heatmap-grid">
+                {heatmapDates.map((date) => {
+                  const record = practiceDays.find((day) => day.date === date);
+                  const level = Number(Boolean(record?.svadhyaya)) + Number(Boolean(record?.meditation));
+                  const description = level === 2 ? copy.fullPracticeDay : level === 1 ? copy.onePractice : copy.noPractice;
+                  return (
+                    <span
+                      className={`heatmap-cell level-${level}`}
+                      key={date}
+                      title={`${new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short" }).format(new Date(`${date}T12:00:00`))}: ${description}`}
+                    />
+                  );
+                })}
+              </div>
+              <div className="heatmap-legend">
+                <span>{copy.less}</span>
+                <i className="heatmap-cell level-0" />
+                <i className="heatmap-cell level-1" />
+                <i className="heatmap-cell level-2" />
+                <span>{copy.more}</span>
+              </div>
+            </section>
 
             <section className="week-list" aria-label={copy.lastSevenDays}>
               {recent.map((date) => {
@@ -499,15 +526,4 @@ function HabitDot({ complete, label }: { complete: boolean; label: string }) {
 
 function NavButton({ active, label, icon, onClick }: { active: boolean; label: string; icon: ReactElement; onClick: () => void }) {
   return <button className={active ? "active" : ""} type="button" onClick={onClick}>{icon}<span>{label}</span></button>;
-}
-
-function calculateStreak(days: PracticeDay[]): number {
-  const completed = new Set(days.filter((day) => day.svadhyaya && day.meditation).map((day) => day.date));
-  let streak = 0;
-  const cursor = new Date();
-  while (completed.has(madridDate(cursor))) {
-    streak += 1;
-    cursor.setDate(cursor.getDate() - 1);
-  }
-  return streak;
 }
