@@ -424,6 +424,7 @@ function Player({ audioRef, track, position, isPlaying, playAll, playbackRate, o
             aria-expanded={optionsOpen}
             onClick={() => setOptionsOpen((open) => !open)}
           >
+            <span className="rate-indicator" aria-hidden="true">{playbackRate}×</span>
             <MoreHorizontal />
           </button>
           {optionsOpen && (
