@@ -54,9 +54,7 @@ h2 { font-size: 25px; line-height: 1.12; }
 .player-controls .play-button { width: 62px; height: 62px; background: var(--saffron); color: var(--ink); transition: transform 120ms ease, background 120ms ease; }
 .player-controls .play-button:active { transform: scale(.94); background: #ffa91f; }
 .play-button svg { margin-left: 2px; }
-.speed-controls { display: flex; justify-content: center; gap: 4px; margin-top: 16px; }
-.speed-controls button { min-width: 46px; height: 30px; padding: 0 8px; border: 1px solid rgba(255,255,255,.18); border-radius: 15px; background: transparent; color: #eecac5; font-size: 10px; font-weight: 600; }
-.speed-controls button.active { border-color: var(--saffron); background: var(--saffron); color: var(--ink); }
+.speed-toggle { display: block; min-width: 40px; margin: 10px auto 0; padding: 4px 8px; border: 0; background: transparent; color: #d9aaa5; font-size: 10px; font-weight: 600; }
 
 .complete-practice { width: 100%; min-height: 54px; border: 0; border-bottom: 1px solid var(--divider); background: transparent; color: var(--ink); display: grid; grid-template-columns: 28px 1fr auto; align-items: center; text-align: left; padding: 0 4px; font-size: 13px; font-weight: 700; }
 .complete-practice svg { color: var(--maroon); }

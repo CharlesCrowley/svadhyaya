@@ -23,6 +23,7 @@ export const copy = {
   of: "de",
   playbackPosition: "Posición de reproducción",
   playbackSpeed: "Velocidad de reproducción",
+  changePlaybackSpeed: "Cambiar velocidad de reproducción",
   previousSection: "Sección anterior",
   nextSection: "Sección siguiente",
   pause: "Pausar",

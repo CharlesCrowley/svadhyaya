@@ -388,6 +388,12 @@ interface PlayerProps {
 }
 
 function Player({ audioRef, track, position, isPlaying, playAll, playbackRate, onToggle, onTime, onSeek, onEnded, onRateChange, onPrevious, onNext }: PlayerProps) {
+  const playbackRates = [1, 1.25, 1.5, 2];
+  const cyclePlaybackRate = () => {
+    const currentIndex = playbackRates.indexOf(playbackRate);
+    onRateChange(playbackRates[(currentIndex + 1) % playbackRates.length]);
+  };
+
   return (
     <section className="player-surface">
       <audio ref={audioRef} onTimeUpdate={(event) => onTime(event.currentTarget.currentTime)} onEnded={onEnded} preload="metadata" />
@@ -418,19 +424,14 @@ function Player({ audioRef, track, position, isPlaying, playAll, playbackRate, o
         </button>
         <button type="button" aria-label={copy.nextSection} onClick={onNext}><ChevronRight /></button>
       </div>
-      <div className="speed-controls" aria-label={copy.playbackSpeed}>
-        {[1, 1.25, 1.5, 2].map((rate) => (
-          <button
-            className={playbackRate === rate ? "active" : ""}
-            key={rate}
-            type="button"
-            aria-pressed={playbackRate === rate}
-            onClick={() => onRateChange(rate)}
-          >
-            {rate}×
-          </button>
-        ))}
-      </div>
+      <button
+        className="speed-toggle"
+        type="button"
+        aria-label={`${copy.changePlaybackSpeed}. ${copy.playbackSpeed}: ${playbackRate}×`}
+        onClick={cyclePlaybackRate}
+      >
+        {playbackRate}×
+      </button>
     </section>
   );
 }
