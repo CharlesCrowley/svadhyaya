@@ -63,75 +63,36 @@ The bot token must only exist in server-side secret storage. Logs must not conta
 |---|---|
 | id | Internal UUID |
 | telegram_user_id | Unique Telegram identifier |
-| display_name | Optional convenience value |
 | timezone | User's IANA timezone |
 | locale | Interface locale |
-| consented_at | Explicit privacy consent timestamp |
-| created_at | Account creation timestamp |
-| deleted_at | Soft-deletion workflow timestamp, if needed |
+| consented_at | Required explicit privacy consent timestamp |
+| consent_version | Required version of the accepted notice |
+| created_at / updated_at | Audit timestamps |
 
-### audio_tracks
-
-| Field | Purpose |
-|---|---|
-| id | Internal UUID |
-| title | Display title |
-| teacher_or_source | Attribution |
-| description | Short contextual description |
-| duration_seconds | Playback duration |
-| object_key | Storage location |
-| rights_basis | Owned, licensed or other documented basis |
-| rights_notes | Licence scope and evidence reference |
-| published_at | Visibility control |
-
-### playback_progress
-
-| Field | Purpose |
-|---|---|
-| user_id | Owner |
-| audio_track_id | Recording |
-| position_seconds | Resume position |
-| completed_at | Optional completion timestamp |
-| updated_at | Last playback update |
-
-Use a unique constraint on `(user_id, audio_track_id)`.
-
-### practice_entries
+### practice_days
 
 | Field | Purpose |
 |---|---|
 | id | Internal UUID |
 | user_id | Owner |
 | practice_date | User-local calendar date |
-| practice_type | `svadhyaya` or `meditation` |
-| duration_seconds | Optional measured duration |
-| source | Timer, audio completion or manual entry |
-| completed_at | Exact timestamp |
-| created_at | Audit timestamp |
+| svadhyaya_complete | Manual daily completion |
+| meditation_complete | Completion created by a finished timer |
+| meditation_minutes | Required and at least one when meditation is complete; otherwise null |
+| created_at / updated_at | Audit timestamps |
 
-The API calculates streaks from completed local practice dates. Do not store a mutable streak counter as the source of truth.
-
-### reminder_preferences
-
-| Field | Purpose |
-|---|---|
-| user_id | Owner |
-| enabled | Consent to reminders |
-| local_time | Preferred reminder time |
-| timezone | IANA timezone |
-| practice_type | Optional reminder focus |
-| last_sent_at | Delivery control |
+Use a unique constraint on `(user_id, practice_date)`. The API calculates streaks from dates where both fields are complete. Do not store a mutable streak counter. Audio metadata, playback progress and running timer state stay outside Postgres for the initial persistence slice.
 
 ## Timer implementation
 
-Store these values when starting a session:
+Store these values locally when starting a session:
 
 - `started_at`
 - `target_duration_seconds`
 - `expected_end_at`
 - Current state: running, completed, cancelled
 
-The remaining time is `max(0, expected_end_at - now)`. A visual interval only refreshes the display; it is not the clock. On application activation, recompute from timestamps. Record completion idempotently so reconnects cannot create duplicate practice entries.
+The remaining time is `max(0, expected_end_at - now)`. A visual interval only refreshes the display; it is not the clock. On application activation, recompute from timestamps. When a timer of at least one minute finishes, send an idempotent daily meditation upsert. Do not persist a running timer in the initial slice.
 
 ## Security baseline
 

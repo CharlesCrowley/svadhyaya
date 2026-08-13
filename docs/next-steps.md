@@ -75,9 +75,8 @@ Start only after Step 4 passes.
 
 - Create one Railway production service.
 - Create one separate EU Neon project.
-- Create one private Cloudflare R2 bucket.
-- Upload the five verified audio sections to R2.
-- Add the small database schema for consent, practice entries, timers and playback progress.
+- Use the existing private Railway audio bucket containing the five verified sections.
+- Add the narrowed two-table database slice for versioned consent and daily practice history. Keep timers and playback state local for the pilot.
 - Replace browser-only history with authenticated API persistence.
 - Retain browser storage as a temporary offline/retry buffer, not the authority.
 - Deploy, set the permanent Mini App URL and run the release checklist.

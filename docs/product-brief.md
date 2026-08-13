@@ -31,7 +31,7 @@ The product should support practice without turning it into a competitive or dis
 
 - Show today's svadhyaya and meditation status.
 - Provide one-tap access to the chant library and meditation timer.
-- Permit manual completion and correction of today's entries.
+- Permit manual svadhyaya completion and correction of today's entries. Persist meditation completion only after a timer of at least one minute finishes.
 - Celebrate completion subtly, without points or competitive rankings.
 
 ### Chant library

@@ -19,7 +19,7 @@ Run Svadhyaya as a separate application with a separate Neon project and separat
 - Telegram user identity maps to an internal UUID.
 - No ESL `public.*` tables or cross-app identity bridges are used.
 - The initial deployment is one Railway service serving Express, the Telegram webhook and the built Vite/React Mini App.
-- Audio is stored in a private Cloudflare R2 bucket and accessed through short-lived authenticated URLs.
+- Audio is stored in a private Railway storage bucket and streamed through the application server with HTTP range support. Storage credentials are never exposed to the client.
 
 ## Consequences
 

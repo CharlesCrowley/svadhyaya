@@ -41,7 +41,7 @@ Railway service
   +-- Drizzle migrations
           |
           +-- separate Neon PostgreSQL project
-          +-- Cloudflare R2 audio bucket
+          +-- private Railway audio bucket
 ```
 
 ### Reuse from existing apps
@@ -135,7 +135,7 @@ Estimated effort: half a day of coordination.
 - [ ] Record Charlie's Telegram numeric user ID securely in deployment configuration.
 - [ ] Configure the bot's Main Mini App placeholder once a staging URL exists.
 - [ ] Create a separate Neon project in an EU region.
-- [ ] Create a private Cloudflare R2 bucket.
+- [x] Create a private Railway storage bucket in Amsterdam.
 - [ ] Create a Railway project and staging service.
 - [ ] Decide the five practice rules above.
 
@@ -180,10 +180,10 @@ Exit condition: Charlie can mark and correct both habits and see the result afte
 Estimated effort: one day.
 
 - [ ] Optimise the authorised MP3 for mobile streaming.
-- [ ] Upload it to the private R2 bucket through an operator script.
+- [x] Upload it to the private Railway bucket through an operator script.
 - [ ] Seed track metadata with provenance and rights basis.
-- [ ] Issue short-lived direct R2 GET URLs and provide an authenticated refresh endpoint.
-- [ ] Configure R2 CORS and verify HTTP Range requests for seeking.
+- [x] Stream private bucket objects through the application server without exposing storage credentials.
+- [x] Verify HTTP Range requests through the production proxy for seeking.
 - [ ] Build the audio player with play, pause, seek, duration and loading states.
 - [ ] Save playback progress periodically and on pause/page deactivation.
 - [ ] Restore progress on the next opening.
@@ -222,82 +222,48 @@ Estimated effort: one day.
 
 Exit condition: version 0.1 is usable, recoverable and private enough for the single-user pilot.
 
-## Initial schema
+## Initial persistence slice
 
-Keep version 0.1 to five tables.
+The first database-backed slice deliberately narrows the earlier five-table plan to two tables. It persists only identity, consent and daily practice history. Audio metadata remains in application code and private object storage; playback progress, playback rate and running timer state remain device-local. This supersedes the earlier version 0.1 persistence scope. Reconsider durable audio metadata, playback progress or meditation sessions only after the three-morning pilot demonstrates a real need.
 
 ### `svadhyaya.users`
 
 - `id UUID PRIMARY KEY`
 - `telegram_user_id BIGINT UNIQUE NOT NULL`
-- `display_name TEXT NULL`
 - `timezone TEXT NOT NULL DEFAULT 'Europe/Madrid'`
-- `consented_at TIMESTAMPTZ NULL`
+- `locale TEXT NOT NULL DEFAULT 'es'`
+- `consented_at TIMESTAMPTZ NOT NULL`
 - `consent_version TEXT NOT NULL`
-- `created_at TIMESTAMPTZ NOT NULL DEFAULT now()`
-
-### `svadhyaya.audio_tracks`
-
-- `id UUID PRIMARY KEY`
-- `title TEXT NOT NULL`
-- `teacher_or_source TEXT NOT NULL`
-- `description TEXT NULL`
-- `duration_seconds INTEGER NOT NULL CHECK (duration_seconds > 0)`
-- `object_key TEXT UNIQUE NOT NULL`
-- `rights_basis TEXT NOT NULL`
-- `rights_notes TEXT NULL`
-- `published_at TIMESTAMPTZ NULL`
-- `created_at TIMESTAMPTZ NOT NULL DEFAULT now()`
-
-### `svadhyaya.playback_progress`
-
-- `user_id UUID REFERENCES svadhyaya.users(id) ON DELETE CASCADE`
-- `audio_track_id UUID REFERENCES svadhyaya.audio_tracks(id) ON DELETE CASCADE`
-- `position_seconds INTEGER NOT NULL DEFAULT 0 CHECK (position_seconds >= 0)`
 - `updated_at TIMESTAMPTZ NOT NULL DEFAULT now()`
-- primary key on `(user_id, audio_track_id)`
+- `created_at TIMESTAMPTZ NOT NULL DEFAULT now()`
 
-### `svadhyaya.practice_entries`
+Consent revocation immediately hard-deletes the user and cascades to their practice history. A separate revocation state is intentionally not retained for the private MVP.
+
+### `svadhyaya.practice_days`
 
 - `id UUID PRIMARY KEY`
 - `user_id UUID REFERENCES svadhyaya.users(id) ON DELETE CASCADE`
 - `practice_date DATE NOT NULL`
-- `practice_type TEXT NOT NULL CHECK (practice_type IN ('svadhyaya', 'meditation'))`
-- `duration_seconds INTEGER NULL CHECK (duration_seconds IS NULL OR duration_seconds >= 0)`
-- `source TEXT NOT NULL CHECK (source IN ('manual', 'timer'))`
-- `meditation_session_id UUID UNIQUE NULL`
-- `completed_at TIMESTAMPTZ NOT NULL`
+- `svadhyaya_complete BOOLEAN NOT NULL DEFAULT false`
+- `meditation_complete BOOLEAN NOT NULL DEFAULT false`
+- `meditation_minutes INTEGER NULL`
 - `created_at TIMESTAMPTZ NOT NULL DEFAULT now()`
-- unique constraint on `(user_id, practice_date, practice_type)`
+- `updated_at TIMESTAMPTZ NOT NULL DEFAULT now()`
+- unique constraint on `(user_id, practice_date)`
+- check: `(meditation_complete AND meditation_minutes >= 1) OR (NOT meditation_complete AND meditation_minutes IS NULL)`
 
-### `svadhyaya.meditation_sessions`
-
-- `id UUID PRIMARY KEY`
-- `user_id UUID REFERENCES svadhyaya.users(id) ON DELETE CASCADE`
-- `started_at TIMESTAMPTZ NOT NULL`
-- `expected_end_at TIMESTAMPTZ NOT NULL`
-- `target_duration_seconds INTEGER NOT NULL CHECK (target_duration_seconds > 0)`
-- `status TEXT NOT NULL CHECK (status IN ('running', 'completed', 'cancelled'))`
-- `completed_at TIMESTAMPTZ NULL`
-- `created_at TIMESTAMPTZ NOT NULL DEFAULT now()`
-
-All foreign keys are `NOT NULL` unless explicitly marked nullable. Add checks that `expected_end_at > started_at`, timer duration is 1–180 minutes, and `completed_at` is present exactly for completed sessions.
-
-Enforce at most one running session per user with a partial unique index. Complete it using a conditional `running → completed` update and link/upsert the daily meditation entry in one transaction. If a daily meditation entry already exists, retain one entry and use the greater recorded duration.
+All foreign keys are `NOT NULL` unless explicitly marked nullable. Telegram IDs must be positive. Streaks and totals are derived, never persisted. Daily writes use field-specific upserts so concurrent svadhyaya and meditation updates do not overwrite each other.
 
 ## API surface
 
 | Method | Endpoint | Purpose |
 |---|---|---|
 | `POST` | `/api/consent` | Validate Telegram `initData`, accept consent and create the user |
-| `GET` | `/api/today` | Today, active timer and featured track |
-| `PUT` | `/api/practice/:date/:type` | Mark or correct one daily habit |
+| `GET` | `/api/today` | Today's persisted practice state |
+| `PUT` | `/api/practice/:date/svadhyaya` | Mark or correct daily svadhyaya |
+| `PUT` | `/api/practice/:date/meditation` | Persist a completed timer and its minutes |
 | `DELETE` | `/api/practice/:date/:type` | Remove an accidental mark |
 | `GET` | `/api/history?from=&to=` | Calendar entries and calculated totals |
-| `PUT` | `/api/tracks/:id/progress` | Idempotently save playback position |
-| `POST` | `/api/meditation-sessions` | Start a timer session |
-| `POST` | `/api/meditation-sessions/:id/complete` | Atomically complete the timer and habit |
-| `POST` | `/api/meditation-sessions/:id/cancel` | Cancel a timer |
 | `GET` | `/api/me/export` | Export personal data |
 | `DELETE` | `/api/me` | Delete account and practice history |
 | `POST` | `/telegram/webhook` | Receive bot commands and button activity |
@@ -305,7 +271,7 @@ Enforce at most one running session per user with a partial unique index. Comple
 
 All mutations should be safe to retry. Do not accept a user ID from the browser as ownership proof.
 
-For version 0.1, each request carries fresh-enough Telegram `initData`; the server validates it and derives ownership from the authenticated Telegram user. Ordinary completion uses server-calculated today. Corrections are limited to today and the previous seven days; future dates are rejected. Timer creation uses a client idempotency key and returns `409` when another timer is running.
+For version 0.1, each request carries fresh-enough Telegram `initData`; the server validates it and derives ownership from the authenticated Telegram user. Ordinary completion uses server-calculated today. Corrections are limited to today and the previous seven days; future dates are rejected. Meditation writes require an integer duration of at least one minute and are sent only when the device-local timer completes.
 
 ## Tests required before first use
 
@@ -323,8 +289,8 @@ For version 0.1, each request carries fresh-enough Telegram `initData`; the serv
 - Non-allowlisted Telegram user is rejected
 - Duplicate daily completion remains one row
 - Deleting a mark updates history
-- Duplicate timer completion creates one practice entry
-- Concurrent timer completion creates one practice entry
+- Duplicate meditation completion remains one daily row
+- Concurrent habit writes preserve both fields
 - User cannot read another user's data
 - Account deletion cascades through private data
 - Expired media access is rejected
@@ -380,4 +346,4 @@ Add no more than one improvement before the next week of use. Reminders and addi
 - **Verified:** existing app patterns cover the proposed TypeScript, React, Express, Drizzle, Railway and object-storage components.
 - **Verified:** the isolation policy places incompatible auth or privacy-isolated products in a separate project or deployment stamp.
 - **Inference:** combining the Firstly web stack with WhatsEnglish deployment patterns will minimise learning and operational overhead.
-- **Provisional:** Railway, Neon and R2 remain the final providers until accounts, current pricing and deployment constraints are confirmed during Milestone 0.
+- **Verified:** Railway hosts the application and private audio bucket. A separate Neon project remains proposed pending database-governance approval.
