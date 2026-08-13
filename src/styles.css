@@ -33,6 +33,15 @@ button { -webkit-tap-highlight-color: transparent; }
 .brand-logo { display: block; width: 72px; height: 50px; object-fit: contain; mix-blend-mode: multiply; }
 
 main { padding-top: 28px; }
+.sync-notice { display: block; width: 100%; margin: -14px 0 18px; padding: 0; border: 0; background: transparent; color: var(--muted); font-size: 9px; text-align: center; }
+.sync-notice.is-ready { color: var(--success); }
+.sync-notice.is-error { color: var(--maroon); }
+.sync-notice.consent-link { color: var(--maroon); text-decoration: underline; text-underline-offset: 3px; }
+.consent-card { margin: 0 0 28px; padding: 22px; border: 1px solid var(--divider); border-radius: 20px; background: var(--surface); box-shadow: 0 8px 28px rgba(65,27,20,.08); }
+.consent-card h2 { margin-bottom: 12px; }
+.consent-card p:not(.eyebrow) { color: var(--muted); font-size: 12px; line-height: 1.55; }
+.consent-card .primary-action { margin-top: 10px; padding: 0 16px; }
+.consent-card .text-button { display: block; margin: 15px auto 0; }
 h1, h2 { font-family: "Newsreader", Georgia, serif; font-weight: 500; margin: 0; letter-spacing: -.025em; }
 h1 { font-size: clamp(32px, 9vw, 42px); line-height: 1.02; }
 h2 { font-size: 25px; line-height: 1.12; }
@@ -71,6 +80,7 @@ h2 { font-size: 25px; line-height: 1.12; }
 .section-label span { font-family: "Newsreader", Georgia, serif; font-size: 22px; }
 .section-label small { color: var(--muted); font-size: 10px; }
 .check-row { width: 100%; min-height: 66px; border: 0; border-bottom: 1px solid var(--divider); background: transparent; display: grid; grid-template-columns: 38px 1fr auto; align-items: center; text-align: left; color: var(--ink); padding: 0; }
+.check-row:disabled { opacity: .72; }
 .check-row > span:nth-child(2) { display: grid; gap: 3px; }
 .check-row strong { font-size: 14px; }
 .check-row small { color: var(--muted); font-size: 11px; }
@@ -119,6 +129,9 @@ h2 { font-size: 25px; line-height: 1.12; }
 .heatmap-legend { display: flex; justify-content: flex-end; align-items: center; gap: 4px; margin-top: 9px; }
 .heatmap-legend .heatmap-cell { width: 10px; height: 10px; }
 .week-list { border-top: 1px solid var(--divider); }
+.data-controls { display: grid; gap: 8px; margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--divider); }
+.data-controls button { min-height: 42px; border: 1px solid var(--divider); border-radius: 12px; background: var(--surface); color: var(--ink); font-size: 11px; }
+.data-controls button.danger { color: var(--maroon); background: transparent; }
 .day-row { min-height: 70px; border-bottom: 1px solid var(--divider); display: grid; grid-template-columns: 1fr 76px 76px; align-items: center; }
 .day-row > div { display: grid; gap: 3px; }
 .day-row > div span { color: var(--muted); font-size: 10px; text-transform: uppercase; }

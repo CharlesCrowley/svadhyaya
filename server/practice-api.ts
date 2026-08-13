@@ -19,7 +19,7 @@ const dateSchema = z
     return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
   });
 const consentSchema = z.object({
-  consentVersion: z.string().min(1).max(50),
+  consentVersion: z.literal("pilot-es-v1"),
   timezone: z.literal("Europe/Madrid"),
   locale: z.literal("es")
 });
@@ -84,7 +84,12 @@ export const practiceApi = Router();
 practiceApi.get("/session", async (request, response) => {
   const telegramUser = authenticate(request);
   const user = await findUserByTelegramId(String(telegramUser.id));
-  response.json({ authenticated: true, consented: Boolean(user), locale: user?.locale ?? "es" });
+  response.json({
+    authenticated: true,
+    consented: Boolean(user),
+    consentVersion: user?.consentVersion,
+    locale: user?.locale ?? "es"
+  });
 });
 
 practiceApi.post("/consent", async (request, response) => {

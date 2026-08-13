@@ -81,3 +81,23 @@ connected to Neon during this test.
 
 Telegram authentication has unit coverage for valid, tampered, expired, future-dated and
 duplicate-field payloads, following Telegram's official HMAC-SHA-256 validation method.
+
+## Client persistence completion
+
+The pre-production client now:
+
+- initializes the official Telegram Mini App bridge and sends only `initData` as authentication proof
+- requires the exact Spanish consent version `pilot-es-v1`
+- leaves browser-only use local and permits declining cloud history
+- migrates valid local marks from the permitted eight-day correction window only after consent
+- loads server history only after current-version consent
+- sends svadhyaya changes and only timer-completed meditation with at least one minute
+- allows completed meditation to be unmarked as a correction but cannot manually create it
+- provides in-app JSON export and immediate account/history deletion
+- uses the Madrid calendar date when loading history
+- keeps failed authenticated writes in a small device-local retry queue and flushes them on relaunch
+
+A second rehearsal smoke test verified that an unknown consent version returns `400`, the
+accepted version is returned by `/api/session`, practice and 20-minute meditation writes are
+read back correctly, export succeeds, and deletion returns the session to unconsented. Final
+rehearsal counts were again `0` users and `0` practice days. Production was not changed.

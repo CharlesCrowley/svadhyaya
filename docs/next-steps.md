@@ -35,7 +35,7 @@ Owner: implementation.
 - Add the 10, 20, 30 and 60-minute meditation presets.
 - Use a simple generated Web Audio chime for the prototype; no separate bell asset is required yet.
 - Calculate the timer from timestamps so reload and suspension do not lose elapsed time.
-- Add manual svadhyaya and meditation completion.
+- Add manual svadhyaya completion. Meditation is completed only by finishing the timer; an existing completion can be unmarked as a correction.
 - Add a seven-day history using browser storage.
 
 Deliverable: the whole flow works locally without a database or cloud storage.
@@ -77,7 +77,7 @@ Start only after Step 4 passes.
 - Create one separate EU Neon project.
 - Use the existing private Railway audio bucket containing the five verified sections.
 - Add the narrowed two-table database slice for versioned consent and daily practice history. Keep timers and playback state local for the pilot.
-- Replace browser-only history with authenticated API persistence.
+- Replace browser-only history with Telegram-authenticated API persistence after explicit versioned consent.
 - Retain browser storage as a temporary offline/retry buffer, not the authority.
 - Deploy, set the permanent Mini App URL and run the release checklist.
 

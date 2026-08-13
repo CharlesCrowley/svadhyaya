@@ -26,7 +26,11 @@ import { chantTracks } from "./data/tracks";
 import { copy } from "./data/copy";
 import advaitaVidyaLogo from "./assets/advaita-vidya-logo.jpg";
 import {
+  acknowledgePracticeWrite,
+  clearPendingPracticeWrites,
+  queuePracticeWrite,
   readPlayback,
+  readPendingPracticeWrites,
   readPracticeDays,
   readTimer,
   savePlayback,
@@ -37,8 +41,19 @@ import {
   type TimerState
 } from "./lib/storage";
 import { contributionCalendar, displayDate, formatClock, madridDate, recentDates } from "./lib/time";
+import {
+  CONSENT_VERSION,
+  acceptPrivacyConsent,
+  deleteRemoteData,
+  exportRemoteData,
+  initialiseTelegram,
+  readRemoteHistory,
+  readSession,
+  saveRemotePractice
+} from "./lib/telegram";
 
 type View = "today" | "practice" | "history";
+type SyncStatus = "local" | "checking" | "consent" | "ready" | "error";
 
 export function App() {
   const initialPlayback = useMemo(readPlayback, []);
@@ -57,11 +72,40 @@ export function App() {
     timer ? Math.max(0, (timer.expectedEndAt - Date.now()) / 1000) : 0
   );
   const [timerPreset, setTimerPreset] = useState(20);
+  const [telegramInitData] = useState(initialiseTelegram);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>(() => telegramInitData ? "checking" : "local");
+  const [remoteEnabled, setRemoteEnabled] = useState(false);
+  const [consentDismissed, setConsentDismissed] = useState(false);
+  const [notice, setNotice] = useState("");
   const completionHandled = useRef(false);
 
   const activeTrack = chantTracks[trackIndex];
   const today = madridDate();
   const todayRecord = practiceDays.find((day) => day.date === today);
+
+  useEffect(() => {
+    if (!telegramInitData) return;
+    let cancelled = false;
+    void readSession(telegramInitData)
+      .then(async (session) => {
+        if (cancelled) return;
+        if (!session.consented || session.consentVersion !== CONSENT_VERSION) {
+          setSyncStatus("consent");
+          return;
+        }
+        setRemoteEnabled(true);
+        await flushPendingWrites(telegramInitData);
+        const days = await readRemoteHistory(telegramInitData, madridDate());
+        if (cancelled) return;
+        savePracticeDays(days);
+        setPracticeDays(days);
+        setSyncStatus("ready");
+      })
+      .catch(() => {
+        if (!cancelled) setSyncStatus("error");
+      });
+    return () => { cancelled = true; };
+  }, [telegramInitData]);
 
   const updatePractice = useCallback((type: PracticeType, complete: boolean, minutes?: number) => {
     setPracticeDays((current) => {
@@ -73,7 +117,9 @@ export function App() {
       const updated: PracticeDay = {
         ...existing,
         [type]: complete,
-        ...(type === "meditation" && minutes ? { meditationMinutes: minutes } : {})
+        ...(type === "meditation"
+          ? { meditationMinutes: complete && minutes ? minutes : undefined }
+          : {})
       };
       const next = [...current.filter((day) => day.date !== today), updated].sort((a, b) =>
         a.date.localeCompare(b.date)
@@ -81,7 +127,66 @@ export function App() {
       savePracticeDays(next);
       return next;
     });
-  }, [today]);
+    if (remoteEnabled) {
+      const write = { date: today, type, complete, ...(minutes ? { minutes } : {}) };
+      queuePracticeWrite(write);
+      void saveRemotePractice(telegramInitData, today, type, complete, minutes)
+        .then(() => {
+          acknowledgePracticeWrite(write);
+          setSyncStatus("ready");
+        })
+        .catch(() => setSyncStatus("error"));
+    }
+  }, [remoteEnabled, telegramInitData, today]);
+
+  const acceptConsent = async () => {
+    setSyncStatus("checking");
+    setNotice("");
+    try {
+      await acceptPrivacyConsent(telegramInitData);
+      setRemoteEnabled(true);
+      queueEligibleLocalHistory(practiceDays);
+      await flushPendingWrites(telegramInitData);
+      const days = await readRemoteHistory(telegramInitData, madridDate());
+      savePracticeDays(days);
+      setPracticeDays(days);
+      setConsentDismissed(false);
+      setSyncStatus("ready");
+    } catch {
+      setSyncStatus("error");
+    }
+  };
+
+  const exportData = async () => {
+    try {
+      const data = await exportRemoteData(telegramInitData);
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `svadhyaya-${today}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      setSyncStatus("error");
+    }
+  };
+
+  const deleteData = async () => {
+    if (!window.confirm(copy.deleteConfirmation)) return;
+    try {
+      await deleteRemoteData(telegramInitData);
+      clearPendingPracticeWrites();
+      savePracticeDays([]);
+      setPracticeDays([]);
+      setSyncStatus("consent");
+      setRemoteEnabled(false);
+      setConsentDismissed(true);
+      setNotice(copy.dataDeleted);
+    } catch {
+      setSyncStatus("error");
+    }
+  };
 
   const playBell = useCallback(() => {
     const AudioContextClass = window.AudioContext;
@@ -231,6 +336,17 @@ export function App() {
       </header>
 
       <main>
+        <SyncNotice
+          status={syncStatus}
+          notice={notice}
+          onShowConsent={() => setConsentDismissed(false)}
+        />
+        {syncStatus === "consent" && !consentDismissed && (
+          <ConsentCard
+            onAccept={() => void acceptConsent()}
+            onDecline={() => setConsentDismissed(true)}
+          />
+        )}
         {view === "today" && (
           <div className="view-enter">
             <section className="opening-copy">
@@ -389,6 +505,14 @@ export function App() {
                 );
               })}
             </section>
+
+            {syncStatus === "ready" && (
+              <section className="data-controls">
+                <p className="eyebrow">{copy.privacyAndData}</p>
+                <button type="button" onClick={() => void exportData()}>{copy.exportData}</button>
+                <button className="danger" type="button" onClick={() => void deleteData()}>{copy.deleteData}</button>
+              </section>
+            )}
           </div>
         )}
       </main>
@@ -508,18 +632,51 @@ function PracticeChecks({ record, onChange }: { record?: PracticeDay; onChange: 
     <section className="practice-checks">
       <div className="section-label"><span>{copy.today}</span><small>{copy.completeBoth}</small></div>
       <CheckRow label={copy.svadhyaya} detail={copy.studyAndRecitation} complete={Boolean(record?.svadhyaya)} onClick={() => onChange("svadhyaya", !record?.svadhyaya)} />
-      <CheckRow label={copy.meditation} detail={record?.meditationMinutes ? `${record.meditationMinutes} ${copy.minutes}` : copy.silentPractice} complete={Boolean(record?.meditation)} onClick={() => onChange("meditation", !record?.meditation)} />
+      <CheckRow
+        label={copy.meditation}
+        detail={record?.meditationMinutes ? `${record.meditationMinutes} ${copy.minutes}` : copy.timerCompletion}
+        complete={Boolean(record?.meditation)}
+        disabled={!record?.meditation}
+        onClick={() => onChange("meditation", false)}
+      />
     </section>
   );
 }
 
-function CheckRow({ label, detail, complete, onClick }: { label: string; detail: string; complete: boolean; onClick: () => void }) {
+function CheckRow({ label, detail, complete, disabled = false, onClick }: { label: string; detail: string; complete: boolean; disabled?: boolean; onClick: () => void }) {
   return (
-    <button className="check-row" type="button" onClick={onClick} aria-pressed={complete}>
+    <button className="check-row" type="button" onClick={onClick} aria-pressed={complete} disabled={disabled}>
       <span className={`check-circle ${complete ? "complete" : ""}`}>{complete ? <Check size={17} /> : <Circle size={18} />}</span>
       <span><strong>{label}</strong><small>{detail}</small></span>
-      <span className="check-status">{complete ? copy.complete : copy.markDone}</span>
+      <span className="check-status">{complete ? copy.correct : typeStatus(disabled)}</span>
     </button>
+  );
+}
+
+function typeStatus(disabled: boolean) {
+  return disabled ? "" : copy.markDone;
+}
+
+function SyncNotice({ status, notice, onShowConsent }: { status: SyncStatus; notice: string; onShowConsent: () => void }) {
+  if (status === "ready") return <p className="sync-notice is-ready">{copy.historySaved}</p>;
+  if (status === "checking") return <p className="sync-notice">{copy.savingHistory}</p>;
+  if (status === "error") return <p className="sync-notice is-error">{copy.syncProblem}</p>;
+  if (status === "consent") {
+    return <button className="sync-notice consent-link" type="button" onClick={onShowConsent}>{notice || copy.saveHistory}</button>;
+  }
+  return <p className="sync-notice">{copy.localOnly}</p>;
+}
+
+function ConsentCard({ onAccept, onDecline }: { onAccept: () => void; onDecline: () => void }) {
+  return (
+    <section className="consent-card" role="dialog" aria-labelledby="consent-title">
+      <p className="eyebrow">{copy.privacyAndData}</p>
+      <h2 id="consent-title">{copy.consentTitle}</h2>
+      <p>{copy.consentBody}</p>
+      <p>{copy.consentPrivacy}</p>
+      <button className="primary-action" type="button" onClick={onAccept}>{copy.consentAccept}</button>
+      <button className="text-button" type="button" onClick={onDecline}>{copy.consentDecline}</button>
+    </section>
   );
 }
 
@@ -540,4 +697,29 @@ function calculateStreak(days: PracticeDay[]): number {
     cursor.setDate(cursor.getDate() - 1);
   }
   return streak;
+}
+
+async function flushPendingWrites(initData: string): Promise<void> {
+  for (const write of readPendingPracticeWrites()) {
+    await saveRemotePractice(initData, write.date, write.type, write.complete, write.minutes);
+    acknowledgePracticeWrite(write);
+  }
+}
+
+function queueEligibleLocalHistory(days: PracticeDay[]): void {
+  const editableDates = new Set(recentDates(8));
+  for (const day of days) {
+    if (!editableDates.has(day.date)) continue;
+    if (day.svadhyaya) {
+      queuePracticeWrite({ date: day.date, type: "svadhyaya", complete: true });
+    }
+    if (day.meditation && day.meditationMinutes && day.meditationMinutes >= 1) {
+      queuePracticeWrite({
+        date: day.date,
+        type: "meditation",
+        complete: true,
+        minutes: day.meditationMinutes
+      });
+    }
+  }
 }

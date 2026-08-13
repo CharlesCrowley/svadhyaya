@@ -53,16 +53,19 @@ Before publishing a recording, retain:
 
 Only administrators should be able to publish content, and publication should be blocked until the rights basis is recorded.
 
-## Draft consent meaning
+## Pilot consent (`pilot-es-v1`)
 
-The eventual interface should communicate, in plain language:
+The Spanish private-pilot interface uses this compact notice before the first persistent write:
 
-> Advaita Vidya Svadhyaya stores the practices and meditation durations you choose to record so that you can see your personal history and streak. This information may reveal religious or philosophical beliefs. It is private by default and is not used for advertising. You can export or delete it at any time.
+> Advaita Vidya guardará los días en que registras svadhyaya y meditación, y la duración de la meditación. Estos datos están vinculados a tu cuenta de Telegram y pueden revelar tus creencias religiosas o filosóficas.
+>
+> Advaita Vidya es responsable de los datos. Se conservan hasta que los elimines, son privados y no se usan para publicidad. Telegram autentica tu cuenta; Railway y Neon procesan los datos para prestar el servicio. Puedes exportarlos, eliminarlos o escribir a advaitavidya@advaitavidya.org.
 
-The final notice must also identify the controller, processors, retention, international transfers where relevant, contact channel and applicable user rights.
+The affirmative button says `Acepto y quiero guardar mi historial`. Choosing `Ahora no` leaves the application usable with device-local storage and creates no database user. In-app deletion immediately removes the user and cascades to all practice history, which also revokes consent for this pilot. Public or multi-user release still requires a full legal notice and review of processor regions, transfers, retention and user-rights information.
 
 ## Sources
 
 - [European Commission: special categories of personal data](https://commission.europa.eu/law/law-topic/data-protection/information-individuals_en)
 - [Telegram Bot Platform Developer Terms](https://telegram.org/tos/bot-developers)
 - [Telegram Privacy Policy](https://telegram.org/privacy)
+- [Advaita Vidya contact page](https://advaitavidya.org/en/contact/)

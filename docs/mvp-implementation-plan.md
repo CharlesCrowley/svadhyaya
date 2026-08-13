@@ -210,8 +210,8 @@ Exit condition: the timer neither loses time nor creates duplicate sessions. The
 
 Estimated effort: one day.
 
-- [ ] Show privacy consent before creating the first persistent user or practice record.
-- [ ] Add authenticated export and hard deletion.
+- [x] Show versioned Spanish privacy consent before creating the first persistent user or practice record.
+- [x] Add authenticated export and immediate hard deletion.
 - [ ] Ensure logs omit Telegram authentication payloads, bot tokens and practice details.
 - [ ] Configure error reporting with sensitive-data scrubbing, or retain minimal structured Railway logs for the private pilot.
 - [ ] Create an encrypted daily database export with 14-day retention and test restoring it into an isolated database.
@@ -273,18 +273,16 @@ All foreign keys are `NOT NULL` unless explicitly marked nullable. Telegram IDs 
 
 | Method | Endpoint | Purpose |
 |---|---|---|
+| `GET` | `/api/session` | Validate Telegram `initData` and return the current consent state |
 | `POST` | `/api/consent` | Validate Telegram `initData`, accept consent and create the user |
-| `GET` | `/api/today` | Today's persisted practice state |
 | `PUT` | `/api/practice/:date/svadhyaya` | Mark or correct daily svadhyaya |
 | `PUT` | `/api/practice/:date/meditation` | Persist a completed timer and its minutes |
-| `DELETE` | `/api/practice/:date/:type` | Remove an accidental mark |
 | `GET` | `/api/history?from=&to=` | Calendar entries and calculated totals |
 | `GET` | `/api/me/export` | Export personal data |
 | `DELETE` | `/api/me` | Delete account and practice history |
-| `POST` | `/telegram/webhook` | Receive bot commands and button activity |
-| `GET` | `/health` | Deployment health check |
+| `GET` | `/api/health` | Deployment health check |
 
-All mutations should be safe to retry. Do not accept a user ID from the browser as ownership proof.
+All mutations are safe to retry. The MVP deliberately has no webhook or separate Telegram user-ID parameter: every protected request derives ownership from verified Mini App `initData`.
 
 For version 0.1, each request carries fresh-enough Telegram `initData`; the server validates it and derives ownership from the authenticated Telegram user. Ordinary completion uses server-calculated today. Corrections are limited to today and the previous seven days; future dates are rejected. Meditation writes require an integer duration of at least one minute and are sent only when the device-local timer completes.
 
