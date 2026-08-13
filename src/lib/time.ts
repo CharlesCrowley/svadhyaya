@@ -1,0 +1,35 @@
+export function formatClock(seconds: number): string {
+  const safeSeconds = Math.max(0, Math.floor(seconds));
+  const minutes = Math.floor(safeSeconds / 60);
+  const remainder = safeSeconds % 60;
+  return `${minutes}:${remainder.toString().padStart(2, "0")}`;
+}
+
+export function madridDate(date = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Madrid",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  }).format(date);
+}
+
+export function displayDate(date = new Date()): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Madrid",
+    weekday: "long",
+    day: "numeric",
+    month: "long"
+  }).format(date);
+}
+
+export function recentDates(count: number): string[] {
+  const dates: string[] = [];
+  const now = new Date();
+  for (let offset = count - 1; offset >= 0; offset -= 1) {
+    const date = new Date(now);
+    date.setDate(date.getDate() - offset);
+    dates.push(madridDate(date));
+  }
+  return dates;
+}

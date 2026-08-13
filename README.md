@@ -13,6 +13,26 @@ This repository is in the discovery and planning phase. The proposed MVP combine
 
 The initial pilot can operate within free service tiers. See [Feasibility and costs](docs/feasibility-and-costs.md) for the research and assumptions.
 
+## Run the prototype
+
+Requirements: Node.js 20 or newer and the five locally split MP3 files in `audio/sections/`.
+
+```bash
+npm install
+npm run dev
+```
+
+Open `http://localhost:5173`. The web interface proxies audio and API requests to the local server on port 3001.
+
+```bash
+npm run typecheck
+npm test
+npm run build
+npm start
+```
+
+The current prototype stores practice, timer and playback state in the browser. Telegram identity and server-side persistence are the next milestone; secrets and copyrighted audio remain outside Git.
+
 ## MVP
 
 - Telegram-based sign-in
