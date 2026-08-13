@@ -22,6 +22,7 @@ import {
   TimerReset
 } from "lucide-react";
 import { chantTracks } from "./data/tracks";
+import { copy } from "./data/copy";
 import {
   readPlayback,
   readPracticeDays,
@@ -220,8 +221,8 @@ export function App() {
         {view === "today" && (
           <div className="view-enter">
             <section className="opening-copy">
-              <p className="eyebrow">Morning practice</p>
-              <h1>Begin where you are.</h1>
+              <p className="eyebrow">{copy.morningPractice}</p>
+              <h1>{copy.beginWhereYouAre}</h1>
             </section>
 
             <Player
@@ -243,7 +244,7 @@ export function App() {
 
             <button className="complete-practice" type="button" onClick={startCompletePractice}>
               <ListMusic size={18} />
-              Play complete practice
+              {copy.playCompletePractice}
               <span>61 min</span>
             </button>
 
@@ -254,11 +255,11 @@ export function App() {
         {view === "practice" && (
           <div className="view-enter">
             <section className="section-heading">
-              <p className="eyebrow">Practice</p>
-              <h1>Chants and meditation</h1>
+              <p className="eyebrow">{copy.practice}</p>
+              <h1>{copy.chantsAndMeditation}</h1>
             </section>
 
-            <div className="track-list" aria-label="Chant sections">
+            <div className="track-list" aria-label={copy.chantSections}>
               {chantTracks.map((track, index) => (
                 <button
                   className={`track-row ${index === trackIndex ? "is-active" : ""}`}
@@ -279,8 +280,8 @@ export function App() {
             <section className="timer-section">
               <div className="timer-heading">
                 <div>
-                  <p className="eyebrow">Meditation</p>
-                  <h2>{timer ? "Remain with the practice" : "Choose a duration"}</h2>
+                  <p className="eyebrow">{copy.meditation}</p>
+                  <h2>{timer ? copy.remainWithPractice : copy.chooseDuration}</h2>
                 </div>
                 <TimerReset size={22} />
               </div>
@@ -289,9 +290,9 @@ export function App() {
                 <div className="timer-active">
                   <div className="timer-ring" style={{ "--progress": `${remaining / (timer.durationMinutes * 60)}` } as CSSProperties}>
                     <span>{formatClock(remaining)}</span>
-                    <small>remaining</small>
+                    <small>{copy.remaining}</small>
                   </div>
-                  <button className="text-button" type="button" onClick={cancelTimer}>End session</button>
+                  <button className="text-button" type="button" onClick={cancelTimer}>{copy.endSession}</button>
                 </div>
               ) : (
                 <>
@@ -309,7 +310,7 @@ export function App() {
                     ))}
                   </div>
                   <button className="primary-action" type="button" onClick={startTimer}>
-                    Begin meditation
+                    {copy.beginMeditation}
                   </button>
                 </>
               )}
@@ -320,27 +321,27 @@ export function App() {
         {view === "history" && (
           <div className="view-enter">
             <section className="section-heading">
-              <p className="eyebrow">History</p>
-              <h1>A quiet record of returning.</h1>
+              <p className="eyebrow">{copy.history}</p>
+              <h1>{copy.quietRecord}</h1>
             </section>
 
             <div className="history-summary">
-              <div><strong>{currentStreak}</strong><span>current streak</span></div>
-              <div><strong>{completeDays}</strong><span>complete days</span></div>
+              <div><strong>{currentStreak}</strong><span>{copy.currentStreak}</span></div>
+              <div><strong>{completeDays}</strong><span>{copy.completeDays}</span></div>
             </div>
 
-            <section className="week-list" aria-label="Last seven days">
+            <section className="week-list" aria-label={copy.lastSevenDays}>
               {recent.map((date) => {
                 const record = practiceDays.find((day) => day.date === date);
                 const dateValue = new Date(`${date}T12:00:00`);
                 return (
                   <div className="day-row" key={date}>
                     <div>
-                      <span>{new Intl.DateTimeFormat("en-GB", { weekday: "short" }).format(dateValue)}</span>
-                      <strong>{new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short" }).format(dateValue)}</strong>
+                      <span>{new Intl.DateTimeFormat("es-ES", { weekday: "short" }).format(dateValue)}</span>
+                      <strong>{new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "short" }).format(dateValue)}</strong>
                     </div>
                     <HabitDot complete={Boolean(record?.svadhyaya)} label="Svadhyaya" />
-                    <HabitDot complete={Boolean(record?.meditation)} label="Meditation" />
+                    <HabitDot complete={Boolean(record?.meditation)} label={copy.meditation} />
                   </div>
                 );
               })}
@@ -349,10 +350,10 @@ export function App() {
         )}
       </main>
 
-      <nav className="bottom-nav" aria-label="Main navigation">
-        <NavButton active={view === "today"} label="Today" icon={<Sparkles />} onClick={() => setView("today")} />
-        <NavButton active={view === "practice"} label="Practice" icon={<BookOpenText />} onClick={() => setView("practice")} />
-        <NavButton active={view === "history"} label="History" icon={<History />} onClick={() => setView("history")} />
+      <nav className="bottom-nav" aria-label={copy.mainNavigation}>
+        <NavButton active={view === "today"} label={copy.today} icon={<Sparkles />} onClick={() => setView("today")} />
+        <NavButton active={view === "practice"} label={copy.practice} icon={<BookOpenText />} onClick={() => setView("practice")} />
+        <NavButton active={view === "history"} label={copy.history} icon={<History />} onClick={() => setView("history")} />
       </nav>
     </div>
   );
@@ -377,7 +378,7 @@ function Player({ audioRef, track, position, isPlaying, playAll, onToggle, onTim
     <section className="player-surface">
       <audio ref={audioRef} onTimeUpdate={(event) => onTime(event.currentTarget.currentTime)} onEnded={onEnded} preload="metadata" />
       <div className="player-topline">
-        <span>{playAll ? `Complete practice · ${track.number} of 5` : `Section ${track.number} of 5`}</span>
+        <span>{playAll ? `${copy.completePractice} · ${track.number} ${copy.of} 5` : `${copy.section} ${track.number} ${copy.of} 5`}</span>
         <span>{formatClock(track.duration)}</span>
       </div>
       <div className="player-title">
@@ -385,7 +386,7 @@ function Player({ audioRef, track, position, isPlaying, playAll, onToggle, onTim
         <p>{track.subtitle}</p>
       </div>
       <input
-        aria-label="Playback position"
+        aria-label={copy.playbackPosition}
         className="progress-range"
         type="range"
         min="0"
@@ -397,11 +398,11 @@ function Player({ audioRef, track, position, isPlaying, playAll, onToggle, onTim
       />
       <div className="player-times"><span>{formatClock(position)}</span><span>-{formatClock(track.duration - position)}</span></div>
       <div className="player-controls">
-        <button type="button" aria-label="Previous section" onClick={onPrevious}><ChevronLeft /></button>
-        <button className="play-button" type="button" aria-label={isPlaying ? "Pause" : "Play"} onClick={onToggle}>
+        <button type="button" aria-label={copy.previousSection} onClick={onPrevious}><ChevronLeft /></button>
+        <button className="play-button" type="button" aria-label={isPlaying ? copy.pause : copy.play} onClick={onToggle}>
           {isPlaying ? <Pause fill="currentColor" /> : <Play fill="currentColor" />}
         </button>
-        <button type="button" aria-label="Next section" onClick={onNext}><ChevronRight /></button>
+        <button type="button" aria-label={copy.nextSection} onClick={onNext}><ChevronRight /></button>
       </div>
     </section>
   );
@@ -410,9 +411,9 @@ function Player({ audioRef, track, position, isPlaying, playAll, onToggle, onTim
 function PracticeChecks({ record, onChange }: { record?: PracticeDay; onChange: (type: PracticeType, complete: boolean) => void }) {
   return (
     <section className="practice-checks">
-      <div className="section-label"><span>Today</span><small>Complete both for a practice day</small></div>
-      <CheckRow label="Svadhyaya" detail="Study and recitation" complete={Boolean(record?.svadhyaya)} onClick={() => onChange("svadhyaya", !record?.svadhyaya)} />
-      <CheckRow label="Meditation" detail={record?.meditationMinutes ? `${record.meditationMinutes} minutes` : "Silent practice"} complete={Boolean(record?.meditation)} onClick={() => onChange("meditation", !record?.meditation)} />
+      <div className="section-label"><span>{copy.today}</span><small>{copy.completeBoth}</small></div>
+      <CheckRow label={copy.svadhyaya} detail={copy.studyAndRecitation} complete={Boolean(record?.svadhyaya)} onClick={() => onChange("svadhyaya", !record?.svadhyaya)} />
+      <CheckRow label={copy.meditation} detail={record?.meditationMinutes ? `${record.meditationMinutes} ${copy.minutes}` : copy.silentPractice} complete={Boolean(record?.meditation)} onClick={() => onChange("meditation", !record?.meditation)} />
     </section>
   );
 }
@@ -422,7 +423,7 @@ function CheckRow({ label, detail, complete, onClick }: { label: string; detail:
     <button className="check-row" type="button" onClick={onClick} aria-pressed={complete}>
       <span className={`check-circle ${complete ? "complete" : ""}`}>{complete ? <Check size={17} /> : <Circle size={18} />}</span>
       <span><strong>{label}</strong><small>{detail}</small></span>
-      <span className="check-status">{complete ? "Complete" : "Mark done"}</span>
+      <span className="check-status">{complete ? copy.complete : copy.markDone}</span>
     </button>
   );
 }

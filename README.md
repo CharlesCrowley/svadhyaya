@@ -33,6 +33,8 @@ npm start
 
 The current prototype stores practice, timer and playback state in the browser. Telegram identity and server-side persistence are the next milestone; secrets and copyrighted audio remain outside Git.
 
+The MVP interface is currently Spanish-only. Catalan and English are planned once the core morning-practice flow has been validated.
+
 ## MVP
 
 - Telegram-based sign-in

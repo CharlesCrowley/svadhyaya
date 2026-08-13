@@ -15,7 +15,7 @@ export function madridDate(date = new Date()): string {
 }
 
 export function displayDate(date = new Date()): string {
-  return new Intl.DateTimeFormat("en-GB", {
+  return new Intl.DateTimeFormat("es-ES", {
     timeZone: "Europe/Madrid",
     weekday: "long",
     day: "numeric",

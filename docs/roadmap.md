@@ -11,7 +11,7 @@ Target: 2–3 days.
 - Verify and record distribution rights.
 - Identify 5–10 pilot users and their typical devices.
 - Decide whether the pilot tracks a day when either practice is complete or only when both are complete.
-- Confirm supported languages and timezones.
+- Use Spanish for the MVP interface. Add Catalan and English after the morning-practice workflow has been validated. Keep Europe/Madrid as the initial timezone.
 - Approve the privacy approach and consent language.
 
 Exit condition: content and privacy inputs are sufficient to build a realistic prototype.
