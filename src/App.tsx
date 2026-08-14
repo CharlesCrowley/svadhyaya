@@ -423,6 +423,10 @@ export function App() {
                 setPlaybackProblem(true);
                 setIsPlaying(false);
               }}
+              onPlaybackResumed={() => {
+                setPlaybackProblem(false);
+                setIsPlaying(true);
+              }}
               onRateChange={changePlaybackRate}
               onPrevious={() => chooseTrack(Math.max(0, trackIndex - 1))}
               onNext={() => chooseTrack(Math.min(chantTracks.length - 1, trackIndex + 1))}
@@ -595,12 +599,13 @@ interface PlayerProps {
   onEnded: () => void;
   playbackProblem: boolean;
   onPlaybackProblem: () => void;
+  onPlaybackResumed: () => void;
   onRateChange: (rate: number) => void;
   onPrevious: () => void;
   onNext: () => void;
 }
 
-function Player({ audioRef, track, position, isPlaying, playAll, playbackRate, onToggle, onTime, onSeek, onEnded, playbackProblem, onPlaybackProblem, onRateChange, onPrevious, onNext }: PlayerProps) {
+function Player({ audioRef, track, position, isPlaying, playAll, playbackRate, onToggle, onTime, onSeek, onEnded, playbackProblem, onPlaybackProblem, onPlaybackResumed, onRateChange, onPrevious, onNext }: PlayerProps) {
   const playbackRates = [1, 1.2, 1.5, 2];
   const [optionsOpen, setOptionsOpen] = useState(false);
   const optionsRef = useRef<HTMLDivElement>(null);
@@ -631,6 +636,7 @@ function Player({ audioRef, track, position, isPlaying, playAll, playbackRate, o
         onEnded={onEnded}
         onError={onPlaybackProblem}
         onStalled={() => { if (isPlaying) onPlaybackProblem(); }}
+        onPlaying={onPlaybackResumed}
         preload="auto"
       />
       <div className="player-topline">

@@ -43,3 +43,17 @@ Against a production build connected to the private bucket:
 
 Automated tests, TypeScript checks and the production build pass. The remaining
 acceptance test is one screen-off playback run on the actual A52s inside Telegram.
+
+## Production verification
+
+Railway deployment `924b8501-0296-4e99-a27e-739f19975018` completed successfully.
+On the live public endpoint:
+
+- health returned `200` in 0.08 seconds
+- three separate 65,536-byte Guru Gītā ranges returned `206` in 0.29–0.36 seconds
+- a full stream was deliberately disconnected by the client
+- a subsequent range immediately returned `206` in 0.28 seconds
+- runtime logs show a clean start and no media-stream error
+
+The deployment leaves `VITE_CLOUD_HISTORY_ENABLED` false by default, so it does
+not expose consent or attempt database persistence during the current single-user test.
