@@ -31,6 +31,8 @@ trigger for the dropped request, but the server must recover regardless.
 - Ask the browser to preload audio and register Android Media Session play, pause
   and seek actions.
 - Show an explicit resume control if the media element reports an error or stall.
+- Hold a screen wake lock only while audio is playing, recovery is needed, or the
+  meditation timer is active; release it when practice stops and reacquire it when visible.
 - Keep cloud history feature-disabled in this deployment.
 
 ## Verification

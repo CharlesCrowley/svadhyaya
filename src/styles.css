@@ -29,6 +29,8 @@ button { -webkit-tap-highlight-color: transparent; }
 .app-header { height: 84px; display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--divider); }
 .app-header p { margin: 0; }
 .header-date { color: var(--muted); font-size: 12px; text-align: right; }
+.header-status { display: grid; justify-items: end; gap: 3px; }
+.header-status small { color: var(--success); font-size: 8px; text-transform: uppercase; letter-spacing: .08em; }
 .eyebrow { margin: 0 0 5px; color: var(--maroon); font-size: 11px; font-weight: 700; letter-spacing: .15em; text-transform: uppercase; }
 .brand-logo { display: block; width: 72px; height: 50px; object-fit: contain; mix-blend-mode: multiply; }
 

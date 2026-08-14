@@ -79,7 +79,9 @@ export function App() {
   const [consentDismissed, setConsentDismissed] = useState(false);
   const [notice, setNotice] = useState("");
   const [playbackProblem, setPlaybackProblem] = useState(false);
+  const [screenAwake, setScreenAwake] = useState(false);
   const completionHandled = useRef(false);
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   const activeTrack = chantTracks[trackIndex];
   const today = madridDate();
@@ -258,6 +260,7 @@ export function App() {
     setTrackIndex(index);
     setPosition(0);
     setIsPlaying(false);
+    setPlaybackProblem(false);
     savePlayback({ trackId: chantTracks[index].id, position: 0, playAll, playbackRate });
     if (shouldPlay) {
       window.setTimeout(() => {
@@ -265,6 +268,53 @@ export function App() {
       }, 80);
     }
   };
+
+  useEffect(() => {
+    const shouldStayAwake = isPlaying || playbackProblem || timer !== null;
+    let disposed = false;
+
+    const requestWakeLock = async () => {
+      if (
+        !shouldStayAwake ||
+        document.visibilityState !== "visible" ||
+        !("wakeLock" in navigator) ||
+        (wakeLockRef.current && !wakeLockRef.current.released)
+      ) return;
+
+      try {
+        const sentinel = await navigator.wakeLock.request("screen");
+        if (disposed || !shouldStayAwake) {
+          await sentinel.release();
+          return;
+        }
+        wakeLockRef.current = sentinel;
+        setScreenAwake(true);
+        sentinel.addEventListener("release", () => {
+          if (wakeLockRef.current === sentinel) {
+            wakeLockRef.current = null;
+            setScreenAwake(false);
+          }
+        });
+      } catch {
+        setScreenAwake(false);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") void requestWakeLock();
+    };
+
+    void requestWakeLock();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      disposed = true;
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      const sentinel = wakeLockRef.current;
+      wakeLockRef.current = null;
+      setScreenAwake(false);
+      if (sentinel && !sentinel.released) void sentinel.release();
+    };
+  }, [isPlaying, playbackProblem, timer]);
 
   const togglePlayback = async () => {
     const audio = audioRef.current;
@@ -383,7 +433,10 @@ export function App() {
     <div className="app-shell">
       <header className="app-header">
         <img className="brand-logo" src={advaitaVidyaLogo} alt="Advaita Vidya" />
-        <p className="header-date">{displayDate()}</p>
+        <div className="header-status">
+          <p className="header-date">{displayDate()}</p>
+          {screenAwake && <small>{copy.screenAwake}</small>}
+        </div>
       </header>
 
       <main>
