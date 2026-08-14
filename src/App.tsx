@@ -16,10 +16,12 @@ import {
   Circle,
   History,
   ListMusic,
+  Moon,
   MoreHorizontal,
   Pause,
   Play,
   Sparkles,
+  Sun,
   TimerReset
 } from "lucide-react";
 import { chantTracks } from "./data/tracks";
@@ -41,6 +43,7 @@ import {
   type TimerState
 } from "./lib/storage";
 import { contributionCalendar, displayDate, formatClock, madridDate, recentDates } from "./lib/time";
+import { applyTheme, readTheme, type Theme } from "./lib/theme";
 import {
   CONSENT_VERSION,
   acceptPrivacyConsent,
@@ -80,12 +83,19 @@ export function App() {
   const [notice, setNotice] = useState("");
   const [playbackProblem, setPlaybackProblem] = useState(false);
   const [screenAwake, setScreenAwake] = useState(false);
+  const [theme, setTheme] = useState<Theme>(readTheme);
   const completionHandled = useRef(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   const activeTrack = chantTracks[trackIndex];
   const today = madridDate();
   const todayRecord = practiceDays.find((day) => day.date === today);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "light" ? "dark" : "light";
+    applyTheme(nextTheme);
+    setTheme(nextTheme);
+  };
 
   useEffect(() => {
     if (!telegramInitData) return;
@@ -433,9 +443,19 @@ export function App() {
     <div className="app-shell">
       <header className="app-header">
         <img className="brand-logo" src={advaitaVidyaLogo} alt="Advaita Vidya" />
-        <div className="header-status">
-          <p className="header-date">{displayDate()}</p>
-          {screenAwake && <small>{copy.screenAwake}</small>}
+        <div className="header-actions">
+          <div className="header-status">
+            <p className="header-date">{displayDate()}</p>
+            {screenAwake && <small>{copy.screenAwake}</small>}
+          </div>
+          <button
+            className="theme-toggle"
+            type="button"
+            aria-label={theme === "light" ? copy.useDarkMode : copy.useLightMode}
+            onClick={toggleTheme}
+          >
+            {theme === "light" ? <Moon /> : <Sun />}
+          </button>
         </div>
       </header>
 

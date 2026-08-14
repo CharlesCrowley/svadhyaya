@@ -37,6 +37,8 @@ export const copy = {
   play: "Reproducir",
   retryPlayback: "La conexión se interrumpió · Reanudar",
   screenAwake: "Pantalla activa",
+  useDarkMode: "Usar modo oscuro",
+  useLightMode: "Usar modo claro",
   completeBoth: "Completa ambas para registrar el día",
   svadhyaya: "Svadhyaya",
   studyAndRecitation: "Estudio y recitación",
