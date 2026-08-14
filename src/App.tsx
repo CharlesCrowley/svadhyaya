@@ -54,6 +54,7 @@ import {
 
 type View = "today" | "practice" | "history";
 type SyncStatus = "local" | "checking" | "consent" | "ready" | "error";
+const cloudHistoryEnabled = import.meta.env.VITE_CLOUD_HISTORY_ENABLED === "true";
 
 export function App() {
   const initialPlayback = useMemo(readPlayback, []);
@@ -72,11 +73,12 @@ export function App() {
     timer ? Math.max(0, (timer.expectedEndAt - Date.now()) / 1000) : 0
   );
   const [timerPreset, setTimerPreset] = useState(20);
-  const [telegramInitData] = useState(initialiseTelegram);
+  const [telegramInitData] = useState(() => cloudHistoryEnabled ? initialiseTelegram() : "");
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(() => telegramInitData ? "checking" : "local");
   const [remoteEnabled, setRemoteEnabled] = useState(false);
   const [consentDismissed, setConsentDismissed] = useState(false);
   const [notice, setNotice] = useState("");
+  const [playbackProblem, setPlaybackProblem] = useState(false);
   const completionHandled = useRef(false);
 
   const activeTrack = chantTracks[trackIndex];
@@ -267,15 +269,64 @@ export function App() {
   const togglePlayback = async () => {
     const audio = audioRef.current;
     if (!audio) return;
-    if (audio.paused) {
-      await audio.play();
-      setIsPlaying(true);
+    if (audio.paused || !isPlaying || playbackProblem) {
+      if (audio.error || playbackProblem) {
+        const resumeAt = position;
+        audio.load();
+        await new Promise<void>((resolve, reject) => {
+          const ready = () => { cleanup(); resolve(); };
+          const failed = () => { cleanup(); reject(new Error("Audio could not be reloaded")); };
+          const cleanup = () => {
+            audio.removeEventListener("loadedmetadata", ready);
+            audio.removeEventListener("error", failed);
+          };
+          audio.addEventListener("loadedmetadata", ready, { once: true });
+          audio.addEventListener("error", failed, { once: true });
+        });
+        audio.currentTime = resumeAt;
+      }
+      try {
+        await audio.play();
+        setPlaybackProblem(false);
+        setIsPlaying(true);
+      } catch {
+        setPlaybackProblem(true);
+        setIsPlaying(false);
+      }
     } else {
       audio.pause();
       setIsPlaying(false);
       setPosition(audio.currentTime);
     }
   };
+
+  useEffect(() => {
+    if (!("mediaSession" in navigator)) return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: activeTrack.title,
+      artist: "Advaita Vidya",
+      album: copy.morningPractice
+    });
+    navigator.mediaSession.setActionHandler("play", () => {
+      if (!isPlaying) void togglePlayback();
+    });
+    navigator.mediaSession.setActionHandler("pause", () => {
+      if (isPlaying) void togglePlayback();
+    });
+    navigator.mediaSession.setActionHandler("seekbackward", (details) => {
+      const audio = audioRef.current;
+      if (audio) audio.currentTime = Math.max(0, audio.currentTime - (details.seekOffset ?? 10));
+    });
+    navigator.mediaSession.setActionHandler("seekforward", (details) => {
+      const audio = audioRef.current;
+      if (audio) audio.currentTime = Math.min(audio.duration, audio.currentTime + (details.seekOffset ?? 10));
+    });
+    return () => {
+      for (const action of ["play", "pause", "seekbackward", "seekforward"] as MediaSessionAction[]) {
+        navigator.mediaSession.setActionHandler(action, null);
+      }
+    };
+  }, [activeTrack.title, isPlaying, playbackProblem]);
 
   const changePlaybackRate = (rate: number) => {
     setPlaybackRate(rate);
@@ -367,6 +418,11 @@ export function App() {
                 setPosition(nextPosition);
               }}
               onEnded={handleTrackEnd}
+              playbackProblem={playbackProblem}
+              onPlaybackProblem={() => {
+                setPlaybackProblem(true);
+                setIsPlaying(false);
+              }}
               onRateChange={changePlaybackRate}
               onPrevious={() => chooseTrack(Math.max(0, trackIndex - 1))}
               onNext={() => chooseTrack(Math.min(chantTracks.length - 1, trackIndex + 1))}
@@ -537,12 +593,14 @@ interface PlayerProps {
   onTime: (position: number) => void;
   onSeek: (position: number) => void;
   onEnded: () => void;
+  playbackProblem: boolean;
+  onPlaybackProblem: () => void;
   onRateChange: (rate: number) => void;
   onPrevious: () => void;
   onNext: () => void;
 }
 
-function Player({ audioRef, track, position, isPlaying, playAll, playbackRate, onToggle, onTime, onSeek, onEnded, onRateChange, onPrevious, onNext }: PlayerProps) {
+function Player({ audioRef, track, position, isPlaying, playAll, playbackRate, onToggle, onTime, onSeek, onEnded, playbackProblem, onPlaybackProblem, onRateChange, onPrevious, onNext }: PlayerProps) {
   const playbackRates = [1, 1.2, 1.5, 2];
   const [optionsOpen, setOptionsOpen] = useState(false);
   const optionsRef = useRef<HTMLDivElement>(null);
@@ -567,7 +625,14 @@ function Player({ audioRef, track, position, isPlaying, playAll, playbackRate, o
 
   return (
     <section className="player-surface">
-      <audio ref={audioRef} onTimeUpdate={(event) => onTime(event.currentTarget.currentTime)} onEnded={onEnded} preload="metadata" />
+      <audio
+        ref={audioRef}
+        onTimeUpdate={(event) => onTime(event.currentTarget.currentTime)}
+        onEnded={onEnded}
+        onError={onPlaybackProblem}
+        onStalled={() => { if (isPlaying) onPlaybackProblem(); }}
+        preload="auto"
+      />
       <div className="player-topline">
         <span>{playAll ? `${copy.completePractice} · ${track.number} ${copy.of} 5` : `${copy.section} ${track.number} ${copy.of} 5`}</span>
         <div className="player-options" ref={optionsRef}>
@@ -616,6 +681,9 @@ function Player({ audioRef, track, position, isPlaying, playAll, playbackRate, o
         style={{ "--played": `${(position / track.duration) * 100}%` } as CSSProperties}
       />
       <div className="player-times"><span>{formatClock(position)}</span><span>-{formatClock(track.duration - position)}</span></div>
+      {playbackProblem && (
+        <button className="player-retry" type="button" onClick={onToggle}>{copy.retryPlayback}</button>
+      )}
       <div className="player-controls">
         <button type="button" aria-label={copy.previousSection} onClick={onPrevious}><ChevronLeft /></button>
         <button className="play-button" type="button" aria-label={isPlaying ? copy.pause : copy.play} onClick={onToggle}>

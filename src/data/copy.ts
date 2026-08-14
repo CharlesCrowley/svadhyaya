@@ -35,6 +35,7 @@ export const copy = {
   nextSection: "Sección siguiente",
   pause: "Pausar",
   play: "Reproducir",
+  retryPlayback: "La conexión se interrumpió · Reanudar",
   completeBoth: "Completa ambas para registrar el día",
   svadhyaya: "Svadhyaya",
   studyAndRecitation: "Estudio y recitación",

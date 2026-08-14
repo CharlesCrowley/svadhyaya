@@ -58,6 +58,7 @@ h2 { font-size: 25px; line-height: 1.12; }
 .progress-range { --played: 0%; width: 100%; appearance: none; height: 3px; border-radius: 5px; background: linear-gradient(to right, var(--saffron) var(--played), rgba(255,255,255,.24) var(--played)); outline: none; }
 .progress-range::-webkit-slider-thumb { appearance: none; width: 16px; height: 16px; background: var(--saffron); border: 3px solid var(--maroon); border-radius: 50%; box-shadow: 0 0 0 1px var(--saffron); }
 .player-times { margin-top: 7px; color: #d9aaa5; letter-spacing: 0; }
+.player-retry { display: block; margin: 12px auto -4px; padding: 7px 11px; border: 1px solid rgba(255,255,255,.24); border-radius: 12px; background: transparent; color: #fffaf2; font-size: 10px; }
 .player-controls { display: flex; justify-content: center; align-items: center; gap: 22px; margin-top: 20px; }
 .player-controls button { width: 42px; height: 42px; border: 0; border-radius: 50%; background: transparent; color: #f4d9d5; display: grid; place-items: center; }
 .player-controls .play-button { width: 62px; height: 62px; background: var(--saffron); color: var(--ink); transition: transform 120ms ease, background 120ms ease; }
