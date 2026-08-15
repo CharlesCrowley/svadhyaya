@@ -199,7 +199,7 @@ Estimated effort: one to two days because mobile behaviour needs real-device tes
 - [ ] Store `started_at`, `expected_end_at`, duration and status.
 - [ ] Recompute remaining time from the clock after activation or reload.
 - [ ] Make completion idempotent and create one meditation practice record.
-- [ ] Add opening/closing bell playback and explicit audio permission handling while the app is active.
+- [x] Add a preloaded CC0 singing-bowl completion sound, prime it from the timer-start gesture and retain a generated fallback.
 - [ ] Display a clear state if the Mini App was suspended past the finish time.
 - [ ] Test Telegram foreground, minimised, phone locked and interrupted-call cases on iPhone and Android where available.
 - [ ] Document any client limitation rather than disguising it.

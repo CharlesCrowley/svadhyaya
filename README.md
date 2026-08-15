@@ -74,7 +74,9 @@ The architecture and initial data model are documented in [technical architectur
 - [Delivery roadmap](docs/roadmap.md)
 - [Morning-practice MVP implementation plan](docs/mvp-implementation-plan.md)
 - [Independent MVP plan verification](docs/verification/2026-08-12-mvp-plan-verification.md)
+- [Neon project and rehearsal verification](docs/verification/2026-08-13-neon-rehearsal.md)
 - [Design system](docs/design-system.md)
+- [Audio asset register](docs/audio-assets.md)
 - [Immediate next steps](docs/next-steps.md)
 - [Architecture decisions](docs/decisions/README.md)
 

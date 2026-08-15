@@ -86,6 +86,7 @@ export function App() {
   const [theme, setTheme] = useState<Theme>(readTheme);
   const completionHandled = useRef(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  const completionSoundRef = useRef<HTMLAudioElement | null>(null);
 
   const activeTrack = chantTracks[trackIndex];
   const today = madridDate();
@@ -202,7 +203,19 @@ export function App() {
     }
   };
 
-  const playBell = useCallback(() => {
+  useEffect(() => {
+    const audio = new Audio("/sounds/singing-bowl-completion.mp3");
+    audio.preload = "auto";
+    audio.volume = 0.72;
+    completionSoundRef.current = audio;
+    return () => {
+      audio.pause();
+      audio.removeAttribute("src");
+      completionSoundRef.current = null;
+    };
+  }, []);
+
+  const playGeneratedBell = useCallback(() => {
     const AudioContextClass = window.AudioContext;
     if (!AudioContextClass) return;
     const context = new AudioContextClass();
@@ -220,6 +233,17 @@ export function App() {
     oscillator.addEventListener("ended", () => void context.close());
   }, []);
 
+  const playCompletionSound = useCallback(() => {
+    const audio = completionSoundRef.current;
+    if (!audio) {
+      playGeneratedBell();
+      return;
+    }
+    audio.muted = false;
+    audio.currentTime = 0;
+    void audio.play().catch(playGeneratedBell);
+  }, [playGeneratedBell]);
+
   useEffect(() => {
     if (!timer) return;
     const tick = () => {
@@ -230,13 +254,13 @@ export function App() {
         updatePractice("meditation", true, timer.durationMinutes);
         saveTimer(null);
         setTimer(null);
-        playBell();
+        playCompletionSound();
       }
     };
     tick();
     const interval = window.setInterval(tick, 250);
     return () => window.clearInterval(interval);
-  }, [playBell, timer, updatePractice]);
+  }, [playCompletionSound, timer, updatePractice]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -415,6 +439,17 @@ export function App() {
   };
 
   const startTimer = () => {
+    const completionSound = completionSoundRef.current;
+    if (completionSound) {
+      completionSound.muted = true;
+      void completionSound.play().then(() => {
+        completionSound.pause();
+        completionSound.currentTime = 0;
+        completionSound.muted = false;
+      }).catch(() => {
+        completionSound.muted = false;
+      });
+    }
     const startedAt = Date.now();
     const nextTimer = {
       startedAt,
